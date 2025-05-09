@@ -31,32 +31,42 @@ class Answer(Message):
 class Chat:
     client = None
     queries: list[(Prompt, Answer)]
+    messages: list
+    system_prompt: str
 
-    def __init__(self, client):
+    def __init__(self, client, system_prompt=""):
         self.client = client
         self.queries = []
+        self.messages = [{
+            "role": "system",
+            "content": system_prompt
+        }]
+        self.system_prompt = system_prompt
     
     def __str__(self):
         string = ""
+        if self.system_prompt != "":
+            string += f">>> System: {self.system_prompt}\n"
+
         for prompt, answer in self.queries:
             string += str(prompt) + '\n' + str(answer) + '\n'
         return string[:-1]
 
     def query(self, prompt: Prompt) -> Answer:
-        query_content = prompt.get()
-        if len(self.queries) > 0:
-            query_content += f"\n\nPrevious messages in the conversation are: {str(self)}"
+        self.messages.append({
+            "role": "user",
+            "content": prompt.get()
+        })
 
         chat_response = client.chat.complete(
             model="mistral-large-latest",
-            messages=[
-                {
-                    "role": "user",
-                    "content": query_content,
-                },
-            ]
+            messages=self.messages
         )
         answer = Answer(chat_response.choices[0].message.content)
+        self.messages.append({
+            "role": "assistant",
+            "content": answer.get()
+        })
         self.queries.append((prompt, answer))
         return answer
 
