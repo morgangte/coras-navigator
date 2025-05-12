@@ -1,3 +1,4 @@
 .env
 .venv
 guardian_prototype
+chats/*.txt
