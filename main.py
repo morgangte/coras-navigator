@@ -3,52 +3,24 @@ from datetime import datetime
 from mistralai import Mistral
 from dotenv import load_dotenv
 
-class Message:
-    content: str
-
-    def __init__(self, content=""):
-        self.content = content
-
-    def __str__(self):
-        return f">>> {self.formattedString()}"
-
-    def formattedString(self) -> str:
-        raise Exception("Invalid class: formattedString() not implemented")
-    
-    def set(self, content: str) -> None:
-        self.content = content
-    
-    def get(self) -> str:
-        return self.content
-
-class Prompt(Message):
-    def formattedString(self) -> str:
-        return f"User: {self.content}"
-    
-class Answer(Message):
-    def formattedString(self) -> str:
-        return f"Assistant: {self.content}"
+from message import *
+from model import *
 
 class Chat:
-    client = None
-    messages: list
-    system_prompt: str
+    model: Model = None
+    messages: list = None
 
-    def __init__(self, client, system_prompt=""):
-        self.client = client
-        self.messages = [{
-            "role": "system",
-            "content": system_prompt
-        }]
-        self.system_prompt = system_prompt
+    def __init__(self, model):
+        self.model = model
+        self.messages = []
     
     def __str__(self):
         chat = ""
-        if self.system_prompt != "":
-            chat += f">>> System: {self.system_prompt}\n"
 
         for message in self.messages:
-            if message["role"] == "user":
+            if message["role"] == "system":
+                chat += str(SystemMessage(message["content"])) + '\n'
+            elif message["role"] == "user":
                 chat += str(Prompt(message["content"])) + '\n'
             elif message["role"] == "assistant":
                 chat += str(Answer(message["content"])) + '\n'
@@ -57,17 +29,14 @@ class Chat:
         
         return chat[:-1]
 
-    def query(self, prompt: Prompt) -> Answer:
+    def complete(self, message: str, role="user") -> Answer:
         self.messages.append({
-            "role": "user",
-            "content": prompt.get()
+            "role": role,
+            "content": message
         })
 
-        chat_response = client.chat.complete(
-            model="mistral-large-latest",
-            messages=self.messages
-        )
-        answer = Answer(chat_response.choices[0].message.content)
+        answer = self.model.complete(self.messages)
+
         self.messages.append({
             "role": "assistant",
             "content": answer.get()
@@ -86,24 +55,59 @@ class Chat:
         with open(filename, 'w') as file:
             file.write(str(self))
 
-def main(client):
-    chat = Chat(client)
+    def start(self):
+        raise Exception("Invalid class: start() not implemented")
 
-    again = True
-    while(again):
-        text = input(">>> User: ")
-        if (text == "exit"):
-            again = False
-        else:
-            prompt = Prompt(text)
-            answer = chat.query(prompt)
-            print(answer)
+    def loop(self):
+        raise Exception("Invalid class: loop() not implemented")
 
+class CLIChat(Chat):
+    def start(self) -> None:
+        self.loop()
+    
+    def loop(self) -> None:
+        again = True
+        while(again):
+            text = input(">>> User: ")
+            if (text == "exit"):
+                again = False
+            else:
+                answer = self.complete(text, "user")
+                print(answer)
+
+class GuardianChat(CLIChat):
+    def start(self) -> None:
+        answer = self.complete(
+            """
+            You are an expert cybersecurity risk assessment assistant. 
+            Given a context description of a system, you provide cybersecurity risk assessments.
+            This is how a conversation with the user should be conducted: 
+            1. Ask for a context description to analyze.
+            2. Generate a summary of the target of analysis and ask the user if that corresponds to what he tried to describe. If that corresponds, proceed to step 3, otherwise ask for more details/what should be corrected.
+            3. Generate a high-level risk table that contains for each risk: Who/What causes the risk? How? What is the incident? What does it harm (asset)? What makes it possible (vulnerabilities)?
+            4. From this high-level risk table, specify each of the following item: the threat, the threat scenario, the unwanted incident, the impacted assets, and the associated vulnerabilities.
+            5. From this detailed description of each risk, extract the information to format it into a JSON file following this format: {    "vertices": [        {            "type": string,            "id": string,            "text": string        },        {            "type": string,            "id": string,            "text": string        },        {            "type": string,            "id": string,            "text": string,            "likelihood": string        }    ],    "edges": [        {            "type": string,            "source": string,            "target": string        }    ]}. The vertices type can be "threat", "threat_scenario", "asset", "vulnerability", or "unwanted incident". The edges type can be "initiates" or "impacts" if the target is an asset. The likelihoods can be empty, or equal to "possible", "unlikely", "frequent". At this step and at step 5 only, generate only the JSON object without any explanation.
+            You may now proceed to start at step 1.
+            """,
+            role="system")
+        print(answer)
+
+        self.loop()
+
+def test_cli(model):
+    chat = CLIChat(model)
+    chat.start()
     chat.save(directory="chats")
+
+def test_guardian(model):
+    chat = GuardianChat(model)
+    chat.start()
+    chat.save()
 
 if __name__ == "__main__":
     load_dotenv()
     api_key = os.getenv('MISTRAL_API_KEY')
     client = Mistral(api_key=api_key)
+    model = MistralModel(client, "mistral-large-latest")
 
-    main(client)
+    test_guardian(model)

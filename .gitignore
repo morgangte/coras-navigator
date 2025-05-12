@@ -1,4 +1,10 @@
+# Python
+__pycache__/
+
+# Virtual environment
 .env
 .venv
-guardian_prototype
-chats/*.txt
+guardian_prototype/
+
+# Generated output
+chats/
