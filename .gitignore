@@ -8,3 +8,6 @@ guardian_prototype/
 
 # Generated output
 chats/
+
+# Other
+*.swp

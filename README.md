@@ -1,46 +1,37 @@
-# Mistral API access
+# GUARDIAN Prototype
 
-A simple program to test the access to Mistral AI API.
+This is the GUARDIAN Risk Assistant for Cybersecurity Risk Assessment.
 
-## Virtual environment
+## Quick Start
 
-If you don't have set up a virtual environment, this is how to proceed:
+### Virtual environment
 
-```
-python -m venv guardian_prototype
-source guardian_prototype/bin/activate
-```
-
-In a `.env` file, put your API key:
+Working from the server at SINTEF, set up a Conda virtual environment if not already done:
 
 ```
-MISTRAL_API_KEY=<key>
+$ conda create -n <env-name>
 ```
 
-## Quick start
+### Usage
 
 ```
-source guardian_prototype/bin/activate
-python main.py
+$ conda activate <env-name>
+(<env-name>) $ python3 main.py
 ```
 
-### Dependencies
+### After use
 
-Python's virtual environment package
-
-```
-apt install python3.10-venv
-```
-
-Mistral AI module
+Deactivate the virtual environment with:
 
 ```
-pip install mistralai
-```
+(<env-name>) $ conda deactivate 
+``` 
 
-`dotenv` module
+## Dependencies
+
+- Ollama Python, the Python client for Ollama:
 
 ```
-pip install python-dotenv
+$ conda install --name <env-name> conda-forge::ollama-python
 ```
 

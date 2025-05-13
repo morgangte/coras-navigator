@@ -1,7 +1,6 @@
 import os
 from datetime import datetime
-from mistralai import Mistral
-from dotenv import load_dotenv
+from ollama import chat
 
 from message import *
 from model import *
@@ -105,9 +104,57 @@ def test_guardian(model):
     chat.save()
 
 if __name__ == "__main__":
-    load_dotenv()
-    api_key = os.getenv('MISTRAL_API_KEY')
-    client = Mistral(api_key=api_key)
-    model = MistralModel(client, "mistral-large-latest")
+    # model = OllamaModel("llama3:70b-instruct")
+    # test_guardian(model)
 
-    test_guardian(model)
+    text = """ Here are the detailed descriptions of each risk:
+
+    **Risk 1**
+
+    * **Threat**: Insider
+    * **Threat Scenario**: An insider with access to the tester computer decides to maliciously alter it.
+    * **Unwanted Incident**: The compromised tester computer injects the patch with malicious firmware or credentials.
+    * **Impacted Assets**: Health of individuals using the patch
+    * **Associated Vulnerabilities**: Access to the tester computer, lack of monitoring
+
+    **Risk 2**
+
+    * **Threat**: Compromised tester computer
+    * **Threat Scenario**: The compromised tester computer injects the patch with malicious firmware or credentials.
+    * **Unwanted Incident**: Unauthorized data extraction or modification occurs.
+    * **Impacted Assets**: Health of individuals using the patch
+    * **Associated Vulnerabilities**: Vulnerabilities in patch firmware update process
+
+    Now, I'll extract this information to format it into a JSON file:
+
+    {
+    "vertices": [
+    {"type": "threat", "id": "T1", "text": "Insider"},
+    {"type": "threat_scenario", "id": "TS1", "text": "An insider with access to the tester computer decides to maliciously alter it."},
+    {"type": "unwanted_incident", "id": "UI1", "text": "The compromised tester computer injects the patch with malicious firmware or credentials.", "likelihood": "possible"},
+    {"type": "asset", "id": "A1", "text": "Health of individuals using the patch"},
+    {"type": "vulnerability", "id": "V1", "text": "Access to the tester computer, lack of monitoring"},
+    {"type": "threat", "id": "T2", "text": "Compromised tester computer"},
+    {"type": "threat_scenario", "id": "TS2", "text": "The compromised tester computer injects the patch with malicious firmware or credentials."},
+    {"type": "unwanted_incident", "id": "UI2", "text": "Unauthorized data extraction or modification occurs.", "likelihood": "possible"},
+    {"type": "asset", "id": "A2", "text": "Health of individuals using the patch"},
+    {"type": "vulnerability", "id": "V2", "text": "Vulnerabilities in patch firmware update process"}
+    ],
+    "edges": [
+    {"type": "initiates", "source": "T1", "target": "TS1"},
+    {"type": "initiates", "source": "TS1", "target": "UI1"},
+    {"type": "impacts", "source": "UI1", "target": "A1"},
+    {"type": "exploits", "source": "V1", "target": "TS1"},
+    {"type": "initiates", "source": "T2", "target": "TS2"},
+    {"type": "initiates", "source": "TS2", "target": "UI2"},
+    {"type": "impacts", "source": "UI2", "target": "A2"},
+    {"type": "exploits", "source": "V2", "target": "TS2"}
+    ]
+    }
+
+    Let me know if you'd like me to proceed or if you have any questions/clarifications!
+    """
+
+    json_object = extract_JSON(text)
+    print(json_object)
+

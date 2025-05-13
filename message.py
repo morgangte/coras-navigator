@@ -1,3 +1,5 @@
+import json
+
 class Message:
     content: str
 
@@ -29,5 +31,22 @@ class GuardianMessage(Message):
         return f"GUARDIAN: {self.content}"
 
 class SystemMessage(Message):
+    def __str__(self):
+        return self.formattedString()
+
     def formattedString(self):
         return f"[system]: {self.content}"
+
+def extract_JSON(text: str):
+    try:
+        start = text.index('{')
+    except ValueError as error:
+        raise Exception("No JSON object found") from error
+    
+    try:
+        end = text.rindex('}')
+    except ValueError as error:
+        raise Exception("Could not end the JSON object") from error
+
+    return text[start:end+1]
+

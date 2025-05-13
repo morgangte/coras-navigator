@@ -1,4 +1,5 @@
 from message import Answer
+from ollama import chat
 
 class Model:
     client = None 
@@ -10,14 +11,10 @@ class Model:
     def complete(self, messages) -> Answer:
         raise Exception("Invalid class: complete() not implemented")
 
-class MistralModel(Model):
-    def __init__(self, client, model):
-        self.client = client
+class OllamaModel(Model):
+    def __init__(self, model):
         self.model = model
 
-    def complete(self, messages) -> Answer:
-        chat_response = self.client.chat.complete(
-            model=self.model,
-            messages=messages
-        )
-        return Answer(chat_response.choices[0].message.content)
+    def complete(self, messages):
+        response = chat(self.model, messages=messages)
+        return Answer(response['message']['content'])
