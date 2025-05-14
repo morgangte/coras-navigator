@@ -1,6 +1,6 @@
 # GUARDIAN Prototype
 
-This is the GUARDIAN Risk Assistant for Cybersecurity Risk Assessment.
+This is the GUARDIAN Risk Assistant implementation for Cybersecurity Risk Assessment.
 
 ## Quick Start
 
@@ -16,8 +16,10 @@ $ conda create -n <env-name>
 
 ```
 $ conda activate <env-name>
-(<env-name>) $ python3 main.py
+$ make run
 ```
+
+Once in the chat, use `exit` to quit.
 
 ### After use
 
@@ -26,6 +28,14 @@ Deactivate the virtual environment with:
 ```
 (<env-name>) $ conda deactivate 
 ``` 
+
+## Tests
+
+Run unit tests with:
+
+```
+$ make test
+```
 
 ## Dependencies
 

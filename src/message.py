@@ -1,5 +1,16 @@
 import json
 
+class Colors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
 class Message:
     content: str
 
@@ -24,11 +35,14 @@ class Prompt(Message):
     
 class Answer(Message):
     def formattedString(self) -> str:
-        return f"Assistant: {self.content}"
+        return f"{Colors.OKBLUE}Assistant: {self.content}{Colors.ENDC}"
 
 class GuardianMessage(Message):
+    def __str__(self):
+        return self.formattedString()
+
     def formattedString(self):
-        return f"GUARDIAN: {self.content}"
+        return f"{Colors.OKGREEN}[GUARDIAN]: {self.content}{Colors.ENDC}"
 
 class SystemMessage(Message):
     def __str__(self):
@@ -40,13 +54,14 @@ class SystemMessage(Message):
 def extract_JSON(text: str):
     try:
         start = text.index('{')
-    except ValueError as error:
-        raise Exception("No JSON object found") from error
-    
-    try:
         end = text.rindex('}')
     except ValueError as error:
-        raise Exception("Could not end the JSON object") from error
+        raise ValueError("No JSON object found") from error
+       
+    try:
+        json_object = json.loads(text[start:end+1])
+    except ValueError as error:
+        raise Exception("Invalid JSON") from error
 
-    return text[start:end+1]
+    return json_object
 
