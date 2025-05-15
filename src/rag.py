@@ -44,8 +44,7 @@ class NaiveRAG(RAG):
 
         loader = CSVLoader(file_path=path)
         documents = loader.load()
-                
-
+         
         # text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
         # documents = text_splitter.split_documents(documents)
         

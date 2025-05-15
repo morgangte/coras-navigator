@@ -1,6 +1,9 @@
 # Python
 __pycache__/
 
+# Documents for RAG
+rag-docs/
+
 # Virtual environment
 .env
 .venv
@@ -8,6 +11,9 @@ guardian_prototype/
 
 # Generated output
 chats/
+.temp/
 
-# Other
+# Vim
+*.swn
+*.swo
 *.swp
