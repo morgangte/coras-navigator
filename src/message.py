@@ -18,10 +18,10 @@ class Message:
         self.content = content
 
     def __str__(self):
-        return f">>> {self.formattedString()}"
+        return f">>> {self.formatted_string()}"
 
-    def formattedString(self) -> str:
-        raise Exception("Invalid class: formattedString() not implemented")
+    def formatted_string(self) -> str:
+        raise Exception("Invalid class: formatted_string() not implemented")
     
     def set(self, content: str) -> None:
         self.content = content
@@ -30,25 +30,25 @@ class Message:
         return self.content
 
 class Prompt(Message):
-    def formattedString(self) -> str:
+    def formatted_string(self) -> str:
         return f"User: {self.content}"
     
 class Answer(Message):
-    def formattedString(self) -> str:
+    def formatted_string(self) -> str:
         return f"{Colors.OKBLUE}Assistant: {self.content}{Colors.ENDC}"
 
 class GuardianMessage(Message):
     def __str__(self):
-        return self.formattedString()
+        return self.formatted_string()
 
-    def formattedString(self):
+    def formatted_string(self):
         return f"{Colors.OKGREEN}[GUARDIAN]: {self.content}{Colors.ENDC}"
 
 class SystemMessage(Message):
     def __str__(self):
-        return self.formattedString()
+        return self.formatted_string()
 
-    def formattedString(self):
+    def formatted_string(self):
         return f"[system]: {self.content}"
 
 def extract_JSON(text: str):

@@ -3,6 +3,7 @@ from datetime import datetime
 
 from message import *
 from model import *
+from rag import *
 
 class Chat:
     model: Model = None
@@ -62,6 +63,12 @@ class Chat:
     def loop(self):
         raise Exception("Invalid class: loop() not implemented")
 
+    def set_embedding_model(self, model: str) -> None:
+        raise Exception("Invalid class: set_embedding_model() not implemented")
+
+    def load_documents(self, path: str, extension: DocumentExtension) -> None:
+        raise Exception("Invalid class: load_documents() not implemented")
+        
 class CLIChat(Chat):
     def handle_answer(self, answer: Answer) -> None:
         print(answer)
@@ -116,4 +123,29 @@ class GuardianChat(CLIChat):
         
         self.handle_answer(answer)
         self.loop()
+
+class FirstRAGChat(CLIChat):
+    system_promt = """
+        You are a cybersecurity expert assistant. Provided a context, you answer the user query.
+        """
+    rag_module = None
+
+    def set_embedding_model(self, model: str) -> None:
+        self.embedding_model = model
+        self.rag_module = NaiveRAG(self.embedding_model)
+
+    def load_documents(self, path: str, extension: DocumentExtension) -> None:
+        self.rag_module.load_document(path, extension)
+    
+    def loop(self) -> None:
+        again = True
+        while(again):
+            text = input(">>> User: ")
+            if (text == "exit"):
+                again = False
+            else:
+                context = self.rag_module.search(text)
+                prompt = f"Query: {text}\nContext: {context}"
+                answer = self.complete(prompt, "user")
+                self.handle_answer(answer)
 

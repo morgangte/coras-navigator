@@ -45,3 +45,16 @@ $ make test
 $ conda install --name <env-name> conda-forge::ollama-python
 ```
 
+- Langchain, Langchain-community, FAISS and langchain-ollama for RAG:
+
+```
+$ conda install --name <env-name> langchain langchain-community faiss
+```
+
+Since langchain-ollama is not available on Conda, use pip instead:
+
+```
+$ conda activate <env-name>
+$ pip install -U langchain-ollama
+```
+
