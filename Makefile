@@ -15,5 +15,5 @@ test:
 	@export PYTHONPATH=./$(SRC_DIR) && $(PYTHON) $(TEST_DIR)/test.py
 
 download-rag-documents:
-$(PYTHON) $(SCRIPT_DIR)/download-rag-docs.py
+	$(PYTHON) $(SCRIPT_DIR)/download-rag-docs.py
 
