@@ -6,11 +6,13 @@ from model import *
 from rag import *
 
 class Chat:
-    model: Model = None
-    messages: list = None
-
-    def __init__(self, model):
+    model: Model
+    rag_module: RAG
+    messages: list
+    
+    def __init__(self, model: Model, rag_module: RAG=None):
         self.model = model
+        self.rag_module = rag_module
         self.messages = []
     
     def __str__(self):
@@ -28,7 +30,7 @@ class Chat:
         
         return chat[:-1]
 
-    def complete(self, message: str, role="user") -> Answer:
+    def complete(self, message: str, role: str="user") -> Answer:
         self.messages.append({
             "role": role,
             "content": message
@@ -57,24 +59,19 @@ class Chat:
     def handle_answer(self, answer: Answer) -> None:
         raise Exception("Invalid class: handle_answer() not implemented")
 
-    def start(self):
-        raise Exception("Invalid class: start() not implemented")
-
-    def loop(self):
+    def start(self) -> None:
+        self.initialize()
+        self.loop()   
+ 
+    def initialize(self) -> None:
+        return
+ 
+    def loop(self) -> None:
         raise Exception("Invalid class: loop() not implemented")
 
-    def set_embedding_model(self, model: str) -> None:
-        raise Exception("Invalid class: set_embedding_model() not implemented")
-
-    def load_documents(self, path: str, extension: DocumentExtension) -> None:
-        raise Exception("Invalid class: load_documents() not implemented")
-        
 class CLIChat(Chat):
     def handle_answer(self, answer: Answer) -> None:
         print(answer)
-
-    def start(self) -> None:
-        self.loop()
     
     def loop(self) -> None:
         again = True
@@ -115,37 +112,28 @@ class GuardianChat(CLIChat):
 
         print(GuardianMessage("Valid JSON found"))
 
-    def start(self) -> None:
+    def initialize(self) -> None:
         answer = self.complete(
             message=self.system_prompt,
             role="system"
         )
-        
         self.handle_answer(answer)
-        self.loop()
 
 class FirstRAGChat(CLIChat):
     system_promt = """
         You are a cybersecurity expert assistant. Provided a context, you answer the user query.
         """
-    rag_module = None
 
-    def set_embedding_model(self, model: str) -> None:
-        self.embedding_model = model
-        self.rag_module = NaiveRAG(self.embedding_model)
-
-    def load_documents(self, path: str, extension: DocumentExtension) -> None:
-        self.rag_module.load_document(path, extension)
-    
     def loop(self) -> None:
-        again = True
-        while(again):
+        while True:
             text = input(">>> User: ")
             if (text == "exit"):
-                again = False
-            else:
-                context = self.rag_module.search(text)
-                prompt = f"Query: {text}\nContext: {context}"
-                answer = self.complete(prompt, "user")
-                self.handle_answer(answer)
+                return
+            
+            context = self.rag_module.search(text)
+            print(f"{Colors.WARNING}{context}{Colors.ENDC}")    
+        
+            prompt = f"Query: {text}\nContext: {context}"
+            answer = self.complete(prompt, "user")
+            self.handle_answer(answer)
 

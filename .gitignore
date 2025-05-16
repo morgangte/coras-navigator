@@ -2,7 +2,11 @@
 __pycache__/
 
 # Documents for RAG
-rag-docs/
+rag-docs/*
+
+# Saved Vector Store
+resource/rag-sources.json
+resource/vector-store
 
 # Virtual environment
 .env

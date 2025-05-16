@@ -1,5 +1,5 @@
-from test import run_test
 from message import *
+from run_test import run_test
 
 def test_extract_JSON_no_JSON():
     text = "This is some text without JSON."

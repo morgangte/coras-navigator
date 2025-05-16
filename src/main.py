@@ -7,6 +7,17 @@ from model import *
 from chat import *
 from rag import *
 
+DOCUMENTS = [(
+        "./rag-docs/capec-mechanisms-of-attack.csv",
+        DocumentExtension.CSV
+    ), (
+        "./rag-docs/capec-att_ck-related-patterns.csv",
+        DocumentExtension.CSV
+    ), (
+        "./rag-docs/capec-domains-of-attack.csv",
+        DocumentExtension.CSV
+    )]
+
 def test_cli(model):
     chat = CLIChat(model)
     chat.start()
@@ -18,14 +29,16 @@ def test_guardian(model):
     chat.save()
 
 def test_first_rag(chat_model, embedding_model):
-    chat = FirstRAGChat(chat_model)
-    if chat == None:
-        print("Chat is None")
-    chat.set_embedding_model(embedding_model)   
- 
-    DOCUMENT = "./rag-docs/capec-mechanisms-of-attack.csv"
-    chat.load_documents(DOCUMENT, DocumentExtension.CSV)
+    rag_module = NaiveRAG(
+        embedding_model=embedding_model
+    )
+    documents_count = rag_module.load_documents(DOCUMENTS)
+    print(f"The vector store now contains {documents_count} entries.")    
     
+    chat = FirstRAGChat(
+        model=chat_model,
+        rag_module=rag_module
+    )
     chat.start()
     chat.save()
 
