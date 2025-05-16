@@ -93,7 +93,7 @@ class NaiveRAG(RAG):
         
         print(f"Document {path} loaded ({len(documents)} entries).")
         
-    def search(self, query: str):
+    def search(self, query: str, k: int=3):
         results = self.vector_store.similarity_search(
             query=query,
             k=3

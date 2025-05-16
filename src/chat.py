@@ -137,3 +137,32 @@ class FirstRAGChat(CLIChat):
             answer = self.complete(prompt, "user")
             self.handle_answer(answer)
 
+class GuardianRAGChat(GuardianChat):
+    json_template = """
+        {    "vertices": [        {            "type": string,            "id": string,            "text": string        },        {            "type": string,            "id": string,            "text": string        },        {            "type": string,            "id": string,            "text": string,            "likelihood": string        }    ],    "edges": [        {            "type": string,            "source": string,            "target": string        }]}
+        """
+    system_prompt = f"""
+        You are an expert cybersecurity risk assessment assistant. 
+        Given a context description of a system (the 'Query'), you provide cybersecurity risk assessments, based on the trusted sources given in the 'Context'
+        This is how a conversation with the user should be conducted: 
+        1. Ask for a context description to analyze.
+        2. Generate a summary of the target of analysis and ask the user if that corresponds to what he tried to describe. If that corresponds, proceed to step 3, otherwise ask for more details/what should be corrected.
+        3. Generate a high-level risk table that contains for each risk: Who/What causes the risk? How? What is the incident? What does it harm (asset)? What makes it possible (vulnerabilities)?
+        4. From this high-level risk table, specify each of the following item: the threat, the threat scenario, the unwanted incident, the impacted assets, and the associated vulnerabilities.
+        5. From this detailed description of each risk, extract the information to format it into a JSON file following this format: {json_template} The vertices type can be "threat", "threat_scenario", "asset", "vulnerability", or "unwanted incident". The edges type can be "initiates" or "impacts" if the target is an asset. The likelihoods can be empty, or equal to "possible", "unlikely", "frequent". At this step and at step 5 only, generate only the JSON object without any explanation.
+        You may now proceed to start at step 1. 
+        """
+    
+    def loop(self) -> None:
+        while True:
+            text = input(">>> User: ")
+            if (text == "exit"):
+                return
+            
+            context = self.rag_module.search(text, k=5)
+            print(f"{Colors.WARNING}{context}{Colors.ENDC}")    
+        
+            prompt = f"Query: {text}\nContext: {context}"
+            answer = self.complete(prompt, "user")
+            self.handle_answer(answer)
+    
