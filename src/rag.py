@@ -1,4 +1,5 @@
 # Load documents
+from langchain_core.documents import Document
 from langchain_community.document_loaders import CSVLoader
 # Split documents
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -18,6 +19,7 @@ from message import *
 
 class DocumentExtension:
     CSV = "CSV"
+    TXT = "TXT"
 
 class RAG:
     VECTOR_STORE_DOCUMENTS_RECORD = "./resource/vector-store/vector-store-documents.json"
@@ -30,9 +32,8 @@ class RAG:
     def __init__(self, embedding_model: str):
         raise Exception("Invalid class: __init__() not implemented")
 
-class NaiveRAG(RAG):
-    def __init__(self, embedding_model: str):
-        self.embeddings = OllamaEmbeddings(model=embedding_model)
+    def search(self, query: str, k: int=3) -> str:
+        raise Exception("Invalid class: search() not implemented")
 
     def load_documents(self, documents: list[(str, DocumentExtension)]) -> int:
         documents_paths = [path for (path, _) in documents]
@@ -47,7 +48,7 @@ class NaiveRAG(RAG):
 
         return self.vector_store.index.ntotal
 
-    def create_vector_store(self):
+    def create_vector_store(self) -> None:
         index = faiss.IndexFlatL2(len(self.embeddings.embed_query("hello world")))
 
         self.vector_store = FAISS(
@@ -57,7 +58,7 @@ class NaiveRAG(RAG):
             index_to_docstore_id={},
         )
 
-    def save_vector_store(self, documents_paths):
+    def save_vector_store(self, documents_paths) -> None:
         self.vector_store.save_local(
             folder_path=self.VECTOR_STORE_FOLDER
         )
@@ -65,7 +66,7 @@ class NaiveRAG(RAG):
             json.dump(documents_paths, file)
         print(f"Saved Vector Store to {self.VECTOR_STORE_FOLDER}")   
 
-    def load_vector_store(self):
+    def load_vector_store(self) -> None:
         self.vector_store = FAISS.load_local(
             folder_path=self.VECTOR_STORE_FOLDER,
             embeddings=self.embeddings,
@@ -74,14 +75,18 @@ class NaiveRAG(RAG):
         print(f"Loaded Vector Store from '{self.VECTOR_STORE_FOLDER}' (same documents)")   
 
     def load_document(self, path: str, extension: DocumentExtension) -> None:
-        if extension != DocumentExtension.CSV:
+        if extension not in [DocumentExtension.CSV, DocumentExtension.TXT]:
             raise Exception("Document extension not supported")
         
         print(f"Loading document '{path}'...")
 
-        loader = CSVLoader(file_path=path)
-        documents = loader.load()
-        
+        if extension == DocumentExtension.CSV:
+            loader = CSVLoader(file_path=path)
+            documents = loader.load()
+        elif extension == DocumentExtension.TXT:
+            with open(path, "r") as file:
+                documents = [Document(page_content=content) for content in file.read().split("\n")]
+            
         # text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
         # documents = text_splitter.split_documents(documents)
         
@@ -92,8 +97,12 @@ class NaiveRAG(RAG):
         )
         
         print(f"Document {path} loaded ({len(documents)} entries).")
-        
-    def search(self, query: str, k: int=3):
+ 
+class NaiveRAG(RAG):
+    def __init__(self, embedding_model: str):
+        self.embeddings = OllamaEmbeddings(model=embedding_model)
+       
+    def search(self, query: str, k: int=3) -> str:
         results = self.vector_store.similarity_search(
             query=query,
             k=3

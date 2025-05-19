@@ -4,6 +4,7 @@ from datetime import datetime
 from message import *
 from model import *
 from rag import *
+from router import *
 
 class Chat:
     model: Model
@@ -165,4 +166,38 @@ class GuardianRAGChat(GuardianChat):
             prompt = f"Query: {text}\nContext: {context}"
             answer = self.complete(prompt, "user")
             self.handle_answer(answer)
+
+class GuardianConditionalRAGChat(GuardianRAGChat):
+    json_template = """
+        {    "vertices": [        {            "type": string,            "id": string,            "text": string        },        {            "type": string,            "id": string,            "text": string        },        {            "type": string,            "id": string,            "text": string,            "likelihood": string        }    ],    "edges": [        {            "type": string,            "source": string,            "target": string        }]}
+        """
+    system_prompt = f"""
+        You are an expert cybersecurity risk assessment assistant. 
+        You can answer any cybersecurity-related question but the user can also ask for the analysis of a system. When the user asks for the analysis of a system, act as follows:
+        1. Generate a summary of the target of analysis and ask the user if that corresponds to what was first described. If that corresponds, proceed to step 2. Otherwise, ask for more details/what should be corrected.
+        2. Generate a high-level risk table that contains for each risk: Who/What causes the risk? How? What is the incident? What does it harm (asset)? What makes it possible (vulnerabilities)? Think of at least 2 risks. Then, from this high-level risk table, specify each of the following item: the threat, the threat scenario, the unwanted incident, the impacted assets, and the associated vulnerabilities. Finally, from this detailed description of each risk, extract the information to format it into a JSON file following this format: {json_template}. The vertices type can be "threat", "threat_scenario", "asset", "vulnerability", or "unwanted_incident". The edges type can be "initiates" or "impacts" if the target is an asset. The likelihoods can be empty, or equal to "possible", "unlikely", "frequent". 
+        """
+    router = SimpleRouter(OllamaModel("llama3:8b"))    
+
+    def loop(self) -> None:
+        while True:
+            text = input(">>> User: ")
+            if (text == "exit"):
+                return
+           
+            prompt = "" 
+            decided = self.router.should_retrieve(text)
+            print(GuardianMessage(decided))
+            if decided == "Yes":
+                context = self.rag_module.search(text, k=5)
+                print(f"{Colors.WARNING}{context}{Colors.ENDC}")
+                prompt = f"Query: {text}\nContext: {context}"
+            else:
+                print(GuardianMessage("No retrieval."))
+                prompt = text
+
+            answer = self.complete(prompt, "user")
+            self.handle_answer(answer)
+
+        
     
