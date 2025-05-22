@@ -187,7 +187,6 @@ class GuardianConditionalRAGChat(GuardianRAGChat):
            
             prompt = "" 
             decided = self.router.should_retrieve(text)
-            print(GuardianMessage(decided))
             if decided == "Yes":
                 context = self.rag_module.search(text, k=5)
                 print(f"{Colors.WARNING}{context}{Colors.ENDC}")

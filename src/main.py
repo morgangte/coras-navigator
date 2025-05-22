@@ -7,6 +7,10 @@ from model import *
 from chat import *
 from rag import *
 from router import *
+from formatter import *
+from assessor import *
+from navigator import *
+from summarizer import *
 
 DOCUMENTS = [(
         "./rag-docs/capec-mechanisms-of-attack.csv",
@@ -79,10 +83,46 @@ def test_guardian_conditional_rag():
     chat.start()
     chat.save() 
 
+def test_coras_navigator():
+    summarizer = SimpleSummarizer(OllamaModel("llama3:70b-instruct"))
+    
+    rag = NaiveRAG(embedding_model="llama3:8b")
+    documents_count = rag.load_documents(DOCUMENTS_TXT)
+    print(f"The vector store now contains {documents_count} entries.")    
+    
+    assessor = SimpleRiskAssessor(OllamaModel("llama3:70b-instruct"))
+
+    template = """
+        { 
+            "vertices": [{ 
+                "type": string,  
+                "id": string,   
+                "text": string     
+            }],
+            "edges": [{
+                "source": string,
+                "target": string,
+                "vulnerabilities": [string]
+            }]
+        } 
+        The rules you must follow to generate the JSON file are:
+        - Vertices type can be "human_threat_accidental", "human_threat_deliberate", "non_human_threat", "threat_scenario", "unwanted_incident", or "asset"
+        - Every vertices must have a type, an id and a text
+        - Every edges must have a source and a target
+        - A threat can initiate a threat scenario or an unwanted incident
+        - A threat scenario can lead to an unwanted incident
+        - An unwanted incident can impact an asset
+        """
+    formatter = SimpleJSONFormatter(OllamaModel("llama3:70b-instruct"), template)
+    
+    navigator = CorasNavigator(summarizer, rag, assessor, formatter)
+    navigator.start()    
+
 if __name__ == "__main__":
     # test_first_rag(chat_model, embedding_model)
     # test_guardian_rag(chat_model, embedding_model)    
-    test_guardian_conditional_rag()   
+    # test_guardian_conditional_rag()   
+    test_coras_navigator()
  
     if False:
         model = OllamaModel("llama3:8b")
