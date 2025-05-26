@@ -11,12 +11,14 @@ from formatter import *
 class CorasNavigator:
     summarizer: Summarizer
     rag: RAG
+    rag_cwe: RAG
     assessor: RiskAssessor
     formatter: Formatter
 
-    def __init__(self, summarizer: Summarizer, rag: RAG, assessor: RiskAssessor, formatter: Formatter):
+    def __init__(self, summarizer: Summarizer, rag: RAG, rag_cwe: RAG, assessor: RiskAssessor, formatter: Formatter):
         self.summarizer = summarizer
         self.rag = rag
+        self.rag_cwe = rag_cwe
         self.assessor = assessor
         self.formatter = formatter
     
@@ -48,8 +50,15 @@ class CorasNavigator:
             return self.summarization()
 
     def retrieval(self, text: str) -> str:
-        return self.rag.search(text, k=5)
-        
+        context = ""
+        results = self.rag.search(text, k=3)
+        for result in results:
+            context += result + "\nVulnerabilities: \n"
+            vulnerabilities = self.rag_cwe.search(result, k=2)
+            for vulnerability in vulnerabilities:
+                context += f"- {vulnerability}\n"
+        return context            
+
     def risk_assessment(self, description: str, context: str) -> str:
         return self.assessor.assess(description, context)
 
@@ -67,3 +76,4 @@ class CorasNavigator:
             return
 
         print(f"{Colors.OKGREEN}Valid JSON{Colors.ENDC}")
+

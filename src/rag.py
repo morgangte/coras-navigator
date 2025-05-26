@@ -9,6 +9,11 @@ from langchain_community.docstore.in_memory import InMemoryDocstore
 from langchain_community.vectorstores import FAISS
 # Embeddings
 from langchain_ollama import OllamaEmbeddings
+# Models
+from langchain_ollama import ChatOllama
+# Retrievers
+from langchain.retrievers import ContextualCompressionRetriever
+from langchain.retrievers.document_compressors import LLMChainExtractor
 
 import os
 from uuid import uuid4
@@ -22,23 +27,23 @@ class DocumentExtension:
     TXT = "TXT"
 
 class RAG:
-    VECTOR_STORE_DOCUMENTS_RECORD = "./resource/vector-store/vector-store-documents.json"
-    VECTOR_STORE_FOLDER = "./resource/vector-store/faiss-vector-store/"    
-
+    VECTOR_STORE_DOCUMENTS_RECORD = "vector-store-documents.json"
+    VECTOR_STORE_FOLDER = "faiss-vector-store/"
+    directory: str
     vector_store = None
     embeddings = None
     documents: list[(str, DocumentExtension)]    
 
-    def __init__(self, embedding_model: str):
+    def __init__(self, embedding_model: str, directory: str):
         raise Exception("Invalid class: __init__() not implemented")
 
-    def search(self, query: str, k: int=3) -> str:
+    def search(self, query: str, k: int=3) -> list[str]:
         raise Exception("Invalid class: search() not implemented")
 
     def load_documents(self, documents: list[(str, DocumentExtension)]) -> int:
         documents_paths = [path for (path, _) in documents]
         
-        if is_list_equal_to_json_file_content(documents_paths, self.VECTOR_STORE_DOCUMENTS_RECORD):
+        if is_list_equal_to_json_file_content(documents_paths, f"{self.directory}{self.VECTOR_STORE_DOCUMENTS_RECORD}"):
             self.load_vector_store()
         else:
             self.create_vector_store()
@@ -60,19 +65,19 @@ class RAG:
 
     def save_vector_store(self, documents_paths) -> None:
         self.vector_store.save_local(
-            folder_path=self.VECTOR_STORE_FOLDER
+            folder_path=f"{self.directory}{self.VECTOR_STORE_FOLDER}"
         )
-        with open(self.VECTOR_STORE_DOCUMENTS_RECORD, "w") as file:
+        with open(f"{self.directory}{self.VECTOR_STORE_DOCUMENTS_RECORD}", "w") as file:
             json.dump(documents_paths, file)
         print(f"Saved Vector Store to {self.VECTOR_STORE_FOLDER}")   
 
     def load_vector_store(self) -> None:
         self.vector_store = FAISS.load_local(
-            folder_path=self.VECTOR_STORE_FOLDER,
+            folder_path=f"{self.directory}{self.VECTOR_STORE_FOLDER}",
             embeddings=self.embeddings,
-            allow_dangerous_deserialization=True # Load only self-created files
+            allow_dangerous_deserialization=True # WARNING: Load only self-created files (trusted)
         )
-        print(f"Loaded Vector Store from '{self.VECTOR_STORE_FOLDER}' (same documents)")   
+        print(f"Loaded Vector Store from '{self.directory}{self.VECTOR_STORE_FOLDER}' (same documents)")   
 
     def load_document(self, path: str, extension: DocumentExtension) -> None:
         if extension not in [DocumentExtension.CSV, DocumentExtension.TXT]:
@@ -99,18 +104,50 @@ class RAG:
         print(f"Document {path} loaded ({len(documents)} entries).")
  
 class NaiveRAG(RAG):
-    def __init__(self, embedding_model: str):
+    def __init__(self, embedding_model: str, directory: str):
         self.embeddings = OllamaEmbeddings(model=embedding_model)
-       
-    def search(self, query: str, k: int=3) -> str:
+        self.directory = directory
+        
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+    def search(self, query: str, k: int=3) -> list[str]:
         results = self.vector_store.similarity_search(
             query=query,
-            k=3
+            k=k
         )
-        results = '\n'.join([result.page_content for result in results])
+        return [result.page_content for result in results]
 
-        return results
+class ContextualRAG(RAG):
+    llm = None
+    compressor = None
+    compression_retriever = None
 
+    def __init__(self, embedding_model: str, directory: str):
+        self.embeddings = OllamaEmbeddings(model=embedding_model)
+        self.directory = directory
+        
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+    def initialize_retriever(self):
+        self.llm = ChatOllama(
+            model="llama3:8b",
+            temperature=0
+        )
+        self.compressor = LLMChainExtractor.from_llm(self.llm)    
+        self.compression_retriever = ContextualCompressionRetriever(
+            base_compressor=self.compressor,
+            base_retriever=self.vector_store.as_retriever()
+        )
+
+    def search(self, query: str, k: int=3) -> list[str]:
+        if self.compression_retriever is None: 
+            self.initialize_retriever()
+
+        results = self.compression_retriever.invoke(query)
+        return [result.page_content for result in results]
+    
 def is_list_equal_to_json_file_content(data: list, file_path: str) -> bool:
     if not os.path.exists(file_path):
         return False

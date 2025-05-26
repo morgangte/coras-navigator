@@ -28,6 +28,17 @@ DOCUMENTS_TXT = [(
         DocumentExtension.TXT
     )]
 
+DOCUMENTS_CWE = [(
+        "./rag-docs/cwe-software-development.txt",
+        DocumentExtension.TXT    
+    ), (
+        "./rag-docs/cwe-hardware-design.txt",
+        DocumentExtension.TXT   
+    ), (
+        "./rag-docs/cwe-research-concepts.txt",
+        DocumentExtension.TXT
+    )]
+
 def test_cli(model):
     chat = CLIChat(model)
     chat.start()
@@ -86,10 +97,14 @@ def test_guardian_conditional_rag():
 def test_coras_navigator():
     summarizer = SimpleSummarizer(OllamaModel("llama3:70b-instruct"))
     
-    rag = NaiveRAG(embedding_model="llama3:8b")
+    rag = ContextualRAG(embedding_model="llama3:8b", directory="./vector-stores/main/")
     documents_count = rag.load_documents(DOCUMENTS_TXT)
-    print(f"The vector store now contains {documents_count} entries.")    
+    print(f"The main vector store now contains {documents_count} entries.")    
     
+    rag_cwe = NaiveRAG(embedding_model="llama3:8b", directory="./vector-stores/cwe/")
+    documents_count = rag_cwe.load_documents(DOCUMENTS_CWE)
+    print(f"The CWE vector store now contains {documents_count} entries.")    
+
     assessor = SimpleRiskAssessor(OllamaModel("llama3:70b-instruct"))
 
     template = """
@@ -115,7 +130,7 @@ def test_coras_navigator():
         """
     formatter = SimpleJSONFormatter(OllamaModel("llama3:70b-instruct"), template)
     
-    navigator = CorasNavigator(summarizer, rag, assessor, formatter)
+    navigator = CorasNavigator(summarizer, rag, rag_cwe, assessor, formatter)
     navigator.start()    
 
 if __name__ == "__main__":
@@ -124,13 +139,3 @@ if __name__ == "__main__":
     # test_guardian_conditional_rag()   
     test_coras_navigator()
  
-    if False:
-        model = OllamaModel("llama3:8b")
-        router = SimpleRouter(model)
-        message = "Generate a high-level risk table from the context description"
-        print(f"Received: {router.should_retrieve(message)}")
-
-
-
-
-
