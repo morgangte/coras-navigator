@@ -22,3 +22,8 @@ chats/
 *.swn
 *.swo
 *.swp
+
+# UI
+ui/node_modules
+ui/.cache
+

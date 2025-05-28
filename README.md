@@ -39,6 +39,8 @@ $ make test
 
 ## Dependencies
 
+### CORAS Navigator (back-end)
+
 - Ollama Python, the Python client for Ollama:
 
 ```
@@ -56,5 +58,16 @@ Since langchain-ollama is not available on Conda, use pip instead:
 ```
 $ conda activate <env-name>
 $ pip install -U langchain-ollama
+$ conda deactivate
 ```
+
+- To make the CORAS Navigator accessible from the User Interface, we use Flask and Flask CORS:
+
+```
+$ conda install --name <env-name> anaconda::flask anaconda::flask-cors
+```
+
+### User Interace (front-end)
+
+See `ui/README.md`.
 
