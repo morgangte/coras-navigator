@@ -25,7 +25,6 @@ DOCUMENTS_CWE = [(
     )]
 
 summarizer = SimpleSummarizer(OllamaModel("llama3:70b-instruct"))
-    
 rag = ContextualRAG(embedding_model="llama3:8b", directory="./vector-stores/main/")
 rag_cwe = NaiveRAG(embedding_model="llama3:8b", directory="./vector-stores/cwe/")
 assessor = SimpleRiskAssessor(OllamaModel("llama3:70b-instruct"))
@@ -94,3 +93,4 @@ if __name__ == '__main__':
     print(f"The CWE vector store now contains {documents_count} entries.")    
 
     app.run(debug=True, port=5000)
+

@@ -12,7 +12,6 @@ vector-stores/
 # Virtual environment
 .env
 .venv
-guardian_prototype/
 
 # Generated output
 chats/
@@ -26,4 +25,5 @@ chats/
 # UI
 ui/node_modules
 ui/.cache
+ui/dist/
 
