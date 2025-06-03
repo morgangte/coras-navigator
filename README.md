@@ -14,12 +14,28 @@ $ conda create -n <env-name>
 
 ### Usage
 
+#### In a first terminal
+
+Run the CORAS Navigator API server:
+
 ```
+$ ssh -L 5000:localhost:5000 <username>@mainframe.sintef.no
+$ cd <project-directory>/coras-navigator
 $ conda activate <env-name>
-$ make run
+$ python3 app.py
 ```
 
-Once in the chat, use `exit` to quit.
+#### In a second terminal
+
+Run the User Interface server:
+
+```
+$ ssh -L 1234:localhost:1234 <username>@mainframe.sintef.no
+$ cd <project-directory>/ui
+$ npm start
+```
+
+You will now be able to access the CORAS Navigator at `http://localhost:1234/`.
 
 ### After use
 
@@ -31,7 +47,7 @@ Deactivate the virtual environment with:
 
 ## Tests
 
-Run unit tests with:
+Once the virtual environment activated, run unit tests from the root of the project directory with:
 
 ```
 $ make test
