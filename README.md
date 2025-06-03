@@ -1,6 +1,6 @@
-# GUARDIAN Prototype
+# CORAS Navigator
 
-This is the GUARDIAN Risk Assistant implementation for Cybersecurity Risk Assessment.
+This is the CORAS Navigator. An LLM-Based Assistant for Cybersecurity Risk Assessment.
 
 ## Quick Start
 
