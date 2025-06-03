@@ -2,12 +2,12 @@
 __pycache__/
 
 # Documents for RAG
-rag-docs/*
+coras-navigator/rag-docs/*
 
 # Saved Vector Store
-resource/rag-sources.json
-resource/vector-store
-vector-stores/
+coras-navigator/resource/rag-sources.json
+coras-navigator/resource/vector-store
+coras-navigator/vector-stores/
 
 # Virtual environment
 .env
