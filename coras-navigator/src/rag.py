@@ -132,7 +132,7 @@ class ContextualRAG(RAG):
 
     def initialize_retriever(self):
         self.llm = ChatOllama(
-            model="llama3:8b",
+            model="llama3.2:3b",
             temperature=0
         )
         self.compressor = LLMChainExtractor.from_llm(self.llm)    

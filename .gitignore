@@ -26,4 +26,5 @@ chats/
 ui/node_modules
 ui/.cache
 ui/dist/
+ui/.parcel-cache/
 

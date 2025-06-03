@@ -14,20 +14,18 @@ DOCUMENTS_TXT = [(
     )]
 
 DOCUMENTS_CWE = [(
-        "./rag-docs/cwe-software-development.txt",
-        DocumentExtension.TXT    
-    ), (
-        "./rag-docs/cwe-hardware-design.txt",
-        DocumentExtension.TXT   
-    ), (
-        "./rag-docs/cwe-research-concepts.txt",
+        "./rag-docs/cwe-records.txt",
         DocumentExtension.TXT
     )]
 
-summarizer = SimpleSummarizer(OllamaModel("llama3:70b-instruct"))
-rag = ContextualRAG(embedding_model="llama3:8b", directory="./vector-stores/main/")
-rag_cwe = NaiveRAG(embedding_model="llama3:8b", directory="./vector-stores/cwe/")
-assessor = SimpleRiskAssessor(OllamaModel("llama3:70b-instruct"))
+# summarizer = SimpleSummarizer(OllamaModel("llama3:70b-instruct"))
+# rag = ContextualRAG(embedding_model="llama3:8b", directory="./vector-stores/main/")
+# rag_cwe = NaiveRAG(embedding_model="llama3:8b", directory="./vector-stores/cwe/")
+# assessor = SimpleRiskAssessor(OllamaModel("llama3:70b-instruct"))
+summarizer = SimpleSummarizer(OllamaModel("llama3.2:3b"))
+rag = ContextualRAG(embedding_model="llama3.2:3b", directory="./vector-stores/main/")
+rag_cwe = NaiveRAG(embedding_model="llama3.2:3b", directory="./vector-stores/cwe/")
+assessor = SimpleRiskAssessor(OllamaModel("llama3.2:3b"))
 
 template = """
     { 
@@ -50,7 +48,8 @@ template = """
     - A threat scenario can lead to an unwanted incident
     - An unwanted incident can impact an asset
     """
-formatter = SimpleJSONFormatter(OllamaModel("llama3:70b-instruct"), template)
+# formatter = SimpleJSONFormatter(OllamaModel("llama3:70b-instruct"), template)
+formatter = SimpleJSONFormatter(OllamaModel("llama3.2:3b"), template)
     
 navigator = CorasNavigatorUI(summarizer, rag, rag_cwe, assessor, formatter)
 
@@ -79,6 +78,7 @@ def perform_analysis():
     print(f"Received JSON: {json_data}")
 
     analysis, coras_json = navigator.perform_analysis(navigator.get_summary())
+    print(f"Generated CORAS Threat Model: {coras_json}")
     
     return {
         'analysis': analysis,

@@ -47,44 +47,46 @@ class CWE:
     RELATED_ATTACK_PATTERNS = 21
     NOTES = 22
 
-def format_capec_document_row(row) -> str:
-    return f"{row[Capec.NAME]}: {row[Capec.DESCRIPTION]}\n"
+def format_capec_document_row(row, ids) -> str:
+    return (f"{row[Capec.NAME]}: {row[Capec.DESCRIPTION]}\n", ids)
 
-def format_cwe_document_row(row) -> str:
+def format_cwe_document_row(row, cwe_ids) -> str:
+    if row[CWE.ID] in cwe_ids:
+        return ("", cwe_ids)
+
+    cwe_ids.append(row[CWE.ID])
     if row[CWE.WEAKNESS_ABSTRACTION] == "Variant":
-        return ""
+        return ("", cwe_ids)
 
-    return f"CWE-{row[CWE.ID]}: {row[CWE.NAME]}: {row[CWE.DESCRIPTION]}\n"
+    return (f"CWE-{row[CWE.ID]}: {row[CWE.NAME]}: {row[CWE.DESCRIPTION]}\n", cwe_ids)
 
-def format_csv_document(filename_in: str, filename_out: str, format_row) -> None:
-    with open(filename_in, "r") as file_in, open(filename_out, "w") as file_out:
-        reader = csv.reader(file_in)
-        title = reader.__next__()
-        for row in reader:
-            text = format_row(row)
-            file_out.write(text)
+def format_csv_documents(filenames_in: list[str], filename_out: str, format_row) -> None:
+    row_ids = []
+
+    with open(filename_out, "w") as file_out:
+        for filename_in in filenames_in:
+            with open(filename_in, "r") as file_in:
+                reader = csv.reader(file_in)
+                title = reader.__next__()
+                for row in reader:
+                    text, row_ids = format_row(row, row_ids)
+                    file_out.write(text)
 
 if __name__ == "__main__":
-    format_csv_document(
-        "rag-docs/capec-mechanisms-of-attack.csv", 
+    format_csv_documents([
+            "rag-docs/capec-mechanisms-of-attack.csv"
+        ], 
         "rag-docs/capec-mechanisms-of-attack.txt",
         format_capec_document_row
     )
 
     # CWE Documents
-    format_csv_document(
-        "rag-docs/cwe-software-development.csv",
-        "rag-docs/cwe-software-development.txt",
+    format_csv_documents([
+            "rag-docs/cwe-software-development.csv",
+            "rag-docs/cwe-hardware-design.csv",
+            "rag-docs/cwe-research-concepts.csv"
+        ],
+        "rag-docs/cwe-records.txt",
         format_cwe_document_row   
     )
-    format_csv_document(
-        "rag-docs/cwe-hardware-design.csv",
-        "rag-docs/cwe-hardware-design.txt",
-        format_cwe_document_row   
-    )
-    format_csv_document(
-        "rag-docs/cwe-research-concepts.csv",
-        "rag-docs/cwe-research-concepts.txt",
-        format_cwe_document_row   
-   )
  
