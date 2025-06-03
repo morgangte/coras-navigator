@@ -1,10 +1,29 @@
 # Python
 __pycache__/
 
+# Documents for RAG
+coras-navigator/rag-docs/*
+
+# Saved Vector Store
+coras-navigator/resource/rag-sources.json
+coras-navigator/resource/vector-store
+coras-navigator/vector-stores/
+
 # Virtual environment
 .env
 .venv
-guardian_prototype/
 
 # Generated output
 chats/
+.temp/
+
+# Vim
+*.swn
+*.swo
+*.swp
+
+# UI
+ui/node_modules
+ui/.cache
+ui/dist/
+
