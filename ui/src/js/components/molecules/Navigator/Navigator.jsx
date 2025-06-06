@@ -5,10 +5,6 @@ import './navigator.css'
 import Editor from '../Editor/Editor';
 import FileUpload from './FileUpload';
 
-// For selecting editor-tabrow "Before" 
-import { ToolTabSelected } from '../../../store/Actions';
-const BEFORE_TAB_NO = 0;
-
 const CORAS_NAVIGATOR_IP = "localhost";
 const CORAS_NAVIGATOR_PORT = 5000;
 
@@ -32,8 +28,12 @@ class Navigator extends React.Component {
             analysis: "",
             inputsDisabled: false,
             displaySummary: false,
+            summaryStatusMessage: "Generating summary...",
+            displaySummaryStatusMessage: false,
             displayEditSummaryInstruction: false,
-            displayAnalysis: false
+            displayAnalysis: false,
+            analysisStatusMessage: "Generating analysis...",
+            displayAnalysisStatusMessage: false
         };
     }
 
@@ -50,7 +50,11 @@ class Navigator extends React.Component {
 
     onGenerateSummaryButtonClick() {
         console.log("Generating summary...");
-        this.setState({inputsDisabled: true});
+        this.setState({
+            inputsDisabled: true,
+            summaryStatusMessage: "Generating summary...",
+            displaySummaryStatusMessage: true
+        });
 
         fetch("http://" + CORAS_NAVIGATOR_IP + ":" + CORAS_NAVIGATOR_PORT + "/coras_navigator_api/generate_summary", {
             headers: { 'Content-Type': 'application/json' },
@@ -72,7 +76,11 @@ class Navigator extends React.Component {
             }
         }).catch((error) => {
             console.log(error);
-            this.setState({inputsDisabled: false});
+            this.setState({
+                inputsDisabled: false,
+                summaryStatusMessage: "Something went wrong",
+                displaySummaryStatusMessage: true
+            });
         });
     }
 
