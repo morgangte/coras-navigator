@@ -918,6 +918,7 @@ class Editor extends React.Component {
 
     // not sure how to do through redux
     changeGraph(label) {
+        console.log("Change graph to '" + label + "'");
         var graph = new joint.dia.Graph(); //stupid hack
         if (this.props.graphs[label].graph === null) {
             this.props.setGraph(label, graph.toJSON(), this.paper.scale(), this.paper.translate());

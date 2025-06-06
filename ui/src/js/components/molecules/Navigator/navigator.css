@@ -123,3 +123,11 @@ p.file-name {
 .coras-model-container.hidden .editor-wrapper .editor-menu {
     visibility: collapse;
 }
+
+.coras-model-container a.diagram-tabrow__tablink#diagram-tabrow-id-Asset,
+.coras-model-container a.diagram-tabrow__tablink#diagram-tabrow-id-Risk,
+.coras-model-container a.diagram-tabrow__tablink#diagram-tabrow-id-Treatment_overview {
+    width: 0px;
+    height: 0px;
+    visibility: hidden;
+}

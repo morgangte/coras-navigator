@@ -18,6 +18,7 @@ AddCorasShapes(joint);
 const DiagramSelector = ({ currGraph, changeGraph, selectedTab, diagramOptions, toggleInfoBox }) => {
 
     const switchDiagram = diagramLabel => {
+        console.log("Switch diagram to '" + diagramLabel + "'");
         //check if diagram exists
         // save current diagram
         if (diagramLabel === currGraph.label) {
@@ -47,6 +48,7 @@ const DiagramSelector = ({ currGraph, changeGraph, selectedTab, diagramOptions, 
         <div className="diagram-tabrow">
             {diagramOptions.map((currElem, i) =>
                 <a
+                    id={"diagram-tabrow-id-" + parseDName(currElem).replace(" ", "_")}
                     onClick={() => switchDiagram(currElem)}
                     key={i}
                     onContextMenu={(e) => displayInfo(e, currElem)}

@@ -5,6 +5,10 @@ import './navigator.css'
 import Editor from '../Editor/Editor';
 import FileUpload from './FileUpload';
 
+// For selecting editor-tabrow "Before" 
+import { ToolTabSelected } from '../../../store/Actions';
+const BEFORE_TAB_NO = 0;
+
 const CORAS_NAVIGATOR_IP = "localhost";
 const CORAS_NAVIGATOR_PORT = 5000;
 
@@ -74,6 +78,10 @@ class Navigator extends React.Component {
 
     onSummaryAccurateYesButtonClick() {
         console.log("Performing Risk Assessment...");
+        this.setState({
+            displayEditSummaryInstruction: false
+        });
+
         fetch("http://" + CORAS_NAVIGATOR_IP + ":" + CORAS_NAVIGATOR_PORT + "/coras_navigator_api/perform_analysis", {
             headers: { 'Content-Type': 'application/json' },
             method: 'POST',
@@ -81,11 +89,11 @@ class Navigator extends React.Component {
         }).then((response) => {
             if (response.ok) {
                 response.json().then((response_json) => {
+                    this.editorRef.current.changeGraph('threat');
                     this.setState({
                         analysis: response_json['analysis'], 
                         inputsDisabled: false,
-                        displayAnalysis: true, 
-                        displayEditSummaryInstruction: false
+                        displayAnalysis: true
                     });
                     console.log("Received JSON:", response_json['coras']); 
                     // this.editorRef.current.loadGraphFromJSON(JSON.parse(response_json['coras']));
