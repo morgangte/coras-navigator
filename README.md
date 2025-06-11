@@ -6,7 +6,7 @@ This is the CORAS Navigator. An LLM-Based Assistant for Cybersecurity Risk Asses
 
 ### Virtual environment
 
-Working from the server at SINTEF, set up a Conda virtual environment if not already done:
+Set up a Conda virtual environment:
 
 ```
 $ conda create -n <env-name>
@@ -20,9 +20,9 @@ Run the CORAS Navigator API server:
 
 ```
 $ ssh -L 5000:localhost:5000 <username>@mainframe.sintef.no
-$ cd <project-directory>/coras-navigator
+$ cd <project-directory>
 $ conda activate <env-name>
-$ python3 app.py
+$ make navigator
 ```
 
 #### In a second terminal
@@ -31,8 +31,8 @@ Run the User Interface server:
 
 ```
 $ ssh -L 1234:localhost:1234 <username>@mainframe.sintef.no
-$ cd <project-directory>/ui
-$ npm start
+$ cd <project-directory>
+$ make ui
 ```
 
 You will now be able to access the CORAS Navigator at `http://localhost:1234/`.
@@ -75,6 +75,12 @@ Since langchain-ollama is not available on Conda, use pip instead:
 $ conda activate <env-name>
 $ pip install -U langchain-ollama
 $ conda deactivate
+```
+
+- PyPDF for handling pdf files:
+
+```
+$ conda install --name <env-name> conda-forge::pypdf
 ```
 
 - To make the CORAS Navigator accessible from the User Interface, we use Flask and Flask CORS:

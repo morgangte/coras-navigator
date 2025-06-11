@@ -20,6 +20,7 @@ class Navigator extends React.Component {
         this.onGenerateSummaryButtonClick = this.onGenerateSummaryButtonClick.bind(this);
         this.onSummaryAccurateYesButtonClick = this.onSummaryAccurateYesButtonClick.bind(this);
         this.onSummaryAccurateNoButtonClick = this.onSummaryAccurateNoButtonClick.bind(this);
+        this.onFileElementRemoveButtonClick = this.onFileElementRemoveButtonClick.bind(this);
 
         this.state = {
             files: [],
@@ -37,10 +38,38 @@ class Navigator extends React.Component {
     }
 
     onFileSelect(file) {
-        this.setState((previousState) => ({ 
-            files: [...previousState.files, file.name]
+        if (this.state.inputsDisabled) return;
+        if (!file) return;
+
+        this.setState(prevState => ({ 
+            files: [...prevState.files, file.name],
+            inputsDisabled: true
         }));
-        console.log("File: ", file.name);
+
+        const form_data = new FormData();
+        form_data.append('file', file);
+        fetch("http://" + CORAS_NAVIGATOR_IP + ":" + CORAS_NAVIGATOR_PORT + "/coras_navigator_api/upload_file", {
+            method: 'POST',
+            body: form_data
+        }).then((response) => {
+            if (response.ok) {
+                console.log(response);
+                response.json().then((response_json) => {
+                    console.log(response_json);
+                });
+                this.setState({
+                    inputsDisabled: false
+                });
+            } else {
+                throw Error("Something went wrong while uploading file");
+            }
+        }).catch((error) => {
+            console.log(error);
+            this.setState({
+                inputsDisabled: false
+            });
+        });
+
     }
 
     onContextDescriptionInputValueChange(event) {
@@ -129,8 +158,9 @@ class Navigator extends React.Component {
     }
 
     loadedFileElementToRender(filename, key) {
+        let id = "remove-file-button-FILENAME-" + filename;
         return (<div className="file-square" key={key}>
-                    <button className="remove-file">×</button>
+                    <button className="remove-file" id={id} onClick={this.onFileElementRemoveButtonClick}>×</button>
                     <p className="file-name">{filename}</p>
                 </div>);
     }
@@ -142,6 +172,31 @@ class Navigator extends React.Component {
             fileElements.push(this.loadedFileElementToRender(filename, index));
         }
         return (<div className='files-list'>{fileElements}</div>);
+    }
+
+    onFileElementRemoveButtonClick(event) {
+        const filename = event.target.id.split("-FILENAME-").at(-1);
+        this.setState(prevState => ({ 
+            files: prevState.files.filter(f => f !== filename)
+        }));
+
+        fetch("http://" + CORAS_NAVIGATOR_IP + ":" + CORAS_NAVIGATOR_PORT + "/coras_navigator_api/remove_file", {
+            headers: { 'Content-Type': 'application/json' },
+            method: 'POST',
+            body: JSON.stringify({
+                'filename-to-remove': filename
+            })
+        }).then((response) => {
+            if (response.ok) {
+                response.json().then((response_json) => {
+                    console.log(response_json); 
+                });
+            } else {
+                throw Error("Something went wrong");
+            }
+        }).catch((error) => {
+            console.log(error);
+        });
     }
 
     statusMessage(condition, message) {
@@ -156,7 +211,7 @@ class Navigator extends React.Component {
         return (<div id="coras-navigator">
             <div className="one-line">
                 <p>Please provide a context description of your system:</p>
-                <FileUpload onFileSelect={this.onFileSelect}/>
+                <FileUpload onFileSelect={this.onFileSelect} disabled={this.state.inputsDisabled}/>
             </div>
             {this.loadedFilesElementsToRender()}
             <textarea placeholder="We are developing..." onChange={this.onContextDescriptionInputValueChange}></textarea>

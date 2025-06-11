@@ -1,5 +1,6 @@
-from flask import Flask, render_template, request
+from flask import Flask, request
 from flask_cors import CORS
+import os
 
 from model import *
 from summarizer import *
@@ -7,6 +8,8 @@ from navigator import *
 
 app = Flask(__name__)
 CORS(app)
+
+UPLOADS_DIR = "uploaded-files"
 
 DOCUMENTS_TXT = [(
         "./rag-docs/capec-mechanisms-of-attack.txt",
@@ -19,13 +22,9 @@ DOCUMENTS_CWE = [(
     )]
 
 summarizer = SimpleSummarizer(OllamaModel("llama3:70b-instruct"))
-# rag = ContextualRAG(embedding_model="llama3:8b", directory="./vector-stores/main/")
-# rag_cwe = NaiveRAG(embedding_model="llama3:8b", directory="./vector-stores/cwe/")
 assessor = SimpleRiskAssessor(OllamaModel("llama3:70b-instruct"))
-# summarizer = SimpleSummarizer(OllamaModel("llama3.2:3b"))
 rag = ContextualRAG(embedding_model="llama3.2:3b", directory="./vector-stores/main/")
 rag_cwe = NaiveRAG(embedding_model="llama3.2:3b", directory="./vector-stores/cwe/")
-# assessor = SimpleRiskAssessor(OllamaModel("llama3.2:3b"))
 
 template = """
     { 
@@ -49,31 +48,57 @@ template = """
     - An unwanted incident can impact an asset
     """
 formatter = SimpleJSONFormatter(OllamaModel("llama3:70b-instruct"), template)
-# formatter = SimpleJSONFormatter(OllamaModel("llama3.2:3b"), template)
     
 navigator = CorasNavigatorUI(summarizer, rag, rag_cwe, assessor, formatter)
 
-@app.route('/coras_navigator_api/generate_summary', methods=["GET", "POST"])
-def generate_summary():
-    if request.method != "POST":
-        print("WARNING: Wrong request method")
-        return
-    
-    json_data = request.get_json()
-    print(f"Received JSON: {json_data}")
-    
-    summary = navigator.summarize(json_data['context-description'])
+@app.route('/coras_navigator_api/upload_file', methods=["POST"])
+def upload_file():
+    if not os.path.exists(UPLOADS_DIR):
+        os.makedirs(UPLOADS_DIR)
 
+    if 'file' not in request.files:
+        return {
+            'error': 'No file'
+        }, 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return {
+            'error': 'No file selected'
+        }, 400
+    
+    if file:
+        filepath = os.path.join(UPLOADS_DIR, file.filename)
+        file.save(filepath)
+        return {
+            'message': 'File uploaded successfully'
+        }, 200
+
+@app.route('/coras_navigator_api/remove_file', methods=["POST"])
+def remove_file():
+    json_data = request.get_json()
+    filename = json_data['filename-to-remove']
+    filepath = os.path.join(UPLOADS_DIR, filename)
+    if not os.path.exists(filepath):
+        return {
+            'error': 'No such file'
+        }, 400
+    
+    os.remove(filepath)
+    return {
+        'message': 'File removed successfully'
+    }, 200
+
+@app.route('/coras_navigator_api/generate_summary', methods=["POST"])
+def generate_summary():
+    json_data = request.get_json()
+    summary = navigator.summarize(json_data['context-description'])
     return {
         'summary': summary
     }
 
-@app.route('/coras_navigator_api/perform_analysis', methods=["GET", "POST"])
+@app.route('/coras_navigator_api/perform_analysis', methods=["POST"])
 def perform_analysis():
-    if request.method != "POST":
-        print("WARNING: Wrong request method")
-        return
-
     json_data = request.get_json()
     print(f"Received JSON: {json_data}")
 

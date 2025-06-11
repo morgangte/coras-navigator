@@ -8,6 +8,15 @@
     border: solid 1px white;
 }
 
+.load-button.disabled {
+    background-color: rgba(0, 139, 139, 0.3); 
+}
+
+.load-button.disabled:hover {
+    background-color: rgba(0, 139, 139, 0.3); 
+    cursor: not-allowed;
+}
+
 .load-button:hover {
     background-color: rgba(0, 139, 139, 0.7);
     cursor: pointer;

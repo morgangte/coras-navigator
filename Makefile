@@ -7,8 +7,9 @@ UI_DIR=ui
 SRC_DIR=src
 TEST_DIR=tests
 SCRIPT_DIR=script
+UPLOADS_DIR=uploaded-files
 
-.PHONY: all navigator ui test download-rag-documents clean
+.PHONY: all navigator ui test download-rag-documents rm-files-uploaded-by-user clean
 
 all: 
 	@echo "Select a target between: \n\
@@ -17,10 +18,10 @@ all:
         test: Runs unit tests \n\
         download-rag-documents: Downloads documents for RAG"
 
-navigator: 
+navigator: rm-files-uploaded-by-user
 	cd $(CORAS_DIR) && export OLLAMA_HOST=$(OLLAMA_HOST) && export PYTHONPATH=./$(SRC_DIR) && $(PYTHON) app.py
 
-ui:
+ui: rm-files-uploaded-by-user
 	cd $(UI_DIR) && npm start
 
 test:
@@ -29,7 +30,10 @@ test:
 download-rag-documents:
 	$(PYTHON) $(SCRIPT_DIR)/download-rag-docs.py
 
-clean:
+rm-files-uploaded-by-user:
+	rm -rf $(CORAS_DIR)/$(UPLOADS_DIR)
+
+clean: rm-files-uploaded-by-user
 	rm -rf $(UI_DIR)/dist
 	rm -rf $(UI_DIR)/.parcel-cache
 

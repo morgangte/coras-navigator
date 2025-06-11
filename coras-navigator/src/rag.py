@@ -25,6 +25,7 @@ from message import *
 class DocumentExtension:
     CSV = "CSV"
     TXT = "TXT"
+    PDF = "PDF"
 
 class RAG:
     VECTOR_STORE_DOCUMENTS_RECORD = "vector-store-documents.json"
