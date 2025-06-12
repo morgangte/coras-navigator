@@ -17,6 +17,9 @@ coras-navigator/vector-stores/
 chats/
 .temp/
 
+# Files uploaded by users
+coras-navigator/uploaded-files/
+
 # Vim
 *.swn
 *.swo

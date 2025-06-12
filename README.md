@@ -14,25 +14,21 @@ $ conda create -n <env-name>
 
 ### Usage
 
-#### In a first terminal
-
-Run the CORAS Navigator API server:
+Connect to the SINTEF server with port forwarding:
+- Port 1234: UI React App
+- Port 5049: CORAS Navigator API
 
 ```
-$ ssh -L 5000:localhost:5000 <username>@mainframe.sintef.no
+$ ssh -L 1234:localhost:1234 -L 5049:localhost:5049 <username>@mainframe.sintef.no
+```
+
+Then,
+
+```
 $ cd <project-directory>
 $ conda activate <env-name>
-$ make navigator
-```
-
-#### In a second terminal
-
-Run the User Interface server:
-
-```
-$ ssh -L 1234:localhost:1234 <username>@mainframe.sintef.no
-$ cd <project-directory>
 $ make ui
+$ make navigator
 ```
 
 You will now be able to access the CORAS Navigator at `http://localhost:1234/`.
