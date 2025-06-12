@@ -18,7 +18,7 @@ class SimpleJSONFormatter(Formatter):
             """
     
     def format(self, text: str) -> str:
-        answer = self.model.complete(
+        formatted = self.model.complete(
             messages=[{
                 "role": "system",
                 "content": self.system_prompt
@@ -28,4 +28,5 @@ class SimpleJSONFormatter(Formatter):
             }]
         )
 
-        return answer.get()
+        return formatted
+

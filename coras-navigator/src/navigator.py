@@ -27,6 +27,26 @@ class CorasNavigator:
     def summarize(self, description: str) -> str:
         self.summary = self.summarizer.summarize(description)
         return self.summary
+    
+    def summarize_files(self, directory: str) -> str:
+        files_summarizer = PDFSummarizer(OllamaModel("llama3.2:3b"))
+        
+        files = []
+        for filename in os.listdir(directory):  
+            if not os.path.isfile(os.path.join(directory, filename)):
+                continue
+            if '.' not in filename:
+                continue
+            if filename.rsplit('.', 1)[-1].lower() != "pdf":
+                continue
+            
+            files.append((
+                os.path.join(directory, filename),
+                DocumentExtension.PDF
+            ))
+        print(files)
+        self.summary = files_summarizer.summarize_files(files)
+        return self.summary
 
     def get_summary(self):
         return self.summary

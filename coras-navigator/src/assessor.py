@@ -17,7 +17,7 @@ class SimpleRiskAssessor(RiskAssessor):
         """
 
     def assess(self, description: str, context: str) -> str:
-        answer = self.model.complete(
+        risk_assessment = self.model.complete(
             messages=[{
                 "role": "system",
                 "content": self.system_prompt
@@ -27,4 +27,4 @@ class SimpleRiskAssessor(RiskAssessor):
             }]
         )
 
-        return answer.get()
+        return risk_assessment

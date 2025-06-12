@@ -91,6 +91,9 @@ def remove_file():
 
 @app.route('/coras_navigator_api/generate_summary', methods=["POST"])
 def generate_summary():
+    # summary = navigator.summarize_files(UPLOADS_DIR)
+    # print(f"Generated summary: {summary}")
+
     json_data = request.get_json()
     summary = navigator.summarize(json_data['context-description'])
     return {

@@ -21,7 +21,7 @@ function FileUpload({ onFileSelect, disabled }) {
 
     return (
         <div>
-            <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileChange}/>
+            <input type="file" accept=".pdf" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileChange}/>
             <button className={disabled ? "load-button disabled" : "load-button"} onClick={handleButtonClick}>Upload a file</button>
         </div>
     );

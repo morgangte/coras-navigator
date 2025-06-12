@@ -40,6 +40,13 @@ class Navigator extends React.Component {
     onFileSelect(file) {
         if (this.state.inputsDisabled) return;
         if (!file) return;
+        
+        let extension = file.name.split(".").at(-1).toLowerCase();
+        console.log(extension);
+        if (extension != "pdf") {
+            alert("Only PDF files are supported");
+            return;
+        }
 
         this.setState(prevState => ({ 
             files: [...prevState.files, file.name],

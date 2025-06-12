@@ -1,4 +1,3 @@
-from message import Answer
 from ollama import chat
 
 class Model:
@@ -8,7 +7,7 @@ class Model:
     def __init__(self):
         raise Exception("Invalid class: __init__() not implemented")
 
-    def complete(self, messages) -> Answer:
+    def complete(self, messages):
         raise Exception("Invalid class: complete() not implemented")
 
 class OllamaModel(Model):
@@ -17,4 +16,4 @@ class OllamaModel(Model):
 
     def complete(self, messages):
         response = chat(self.model, messages=messages)
-        return Answer(response['message']['content'])
+        return response['message']['content']

@@ -30,7 +30,7 @@ class SimpleSummarizer(Summarizer):
         """
 
     def summarize(self, text: str) -> str:
-        answer = self.model.complete(
+        summary = self.model.complete(
             messages=[{
                 "role": "system",
                 "content": self.system_prompt
@@ -40,16 +40,16 @@ class SimpleSummarizer(Summarizer):
             }]
         )
 
-        return answer.get()
+        return summary
 
 class PDFSummarizer(Summarizer):
     question_template = """
-        Provide a summary of the following text.
+        Provide a detailed summary of the following text.
         Text: {text}
         Summary: 
         """
     refine_template = """
-        Provide a concise summary of the following text. Your response must consist of bullet points and cover key points of the text.
+        Provide a summary of the following text. Your response must consist of bullet points and cover key points of the text.
         Text: {text}
         Bullet point summary:
         """

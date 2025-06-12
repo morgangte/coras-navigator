@@ -36,4 +36,6 @@ rm-files-uploaded-by-user:
 clean: rm-files-uploaded-by-user
 	rm -rf $(UI_DIR)/dist
 	rm -rf $(UI_DIR)/.parcel-cache
+	rm -rf $(CORAS_DIR)/$(SRC_DIR)/__pycache__
+	rm -rf $(CORAS_DIR)/$(TEST_DIR)/__pycache__
 
