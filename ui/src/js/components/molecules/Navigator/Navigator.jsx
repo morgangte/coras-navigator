@@ -140,8 +140,8 @@ class Navigator extends React.Component {
                         displayAnalysisStatusMessage: false
                     });
                     console.log("Received JSON:", response_json['coras']); 
-                    // this.editorRef.current.loadGraphFromJSON(JSON.parse(response_json['coras']));
-                    this.editorRef.current.loadGraphFromJSON(JSON.parse(TEST_CORAS_DIAGRAM));
+                    this.editorRef.current.createGraphFromDAG(response_json['coras']);
+                    // this.editorRef.current.loadGraphFromJSON(JSON.parse(TEST_CORAS_DIAGRAM));
                 });
             } else {
                 throw Error("Something went wrong");

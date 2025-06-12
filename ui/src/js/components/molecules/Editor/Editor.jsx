@@ -102,6 +102,7 @@ class Editor extends React.Component {
         this.exitHover = this.exitHover.bind(this);
         this.toggleInfo = this.toggleInfo.bind(this);
 
+        this.DAG_THREAT_SOURCES = new Set(['human_threat_accidental', 'human_threat_deliberate', 'non_human_threat']);
     }
 
     saveToLocalStorage() {
@@ -939,7 +940,16 @@ class Editor extends React.Component {
     }
     
     createElementFromDAG(type, id, label, posX, posY) {
+        if (this.DAG_THREAT_SOURCES.has(type)) {
+            type = "threat_source";
+        } else if (type == "asset") {
+            type = "direct_asset";
+        }
+
         const svg = ToolDefinitions.find(tool => tool.role === type);
+        if (svg == undefined) {
+            console.log("Crashed on type: " + type);
+        }
         const shape = svg.shapeFn();
         console.log(`SVG `, svg)
 
@@ -978,14 +988,15 @@ class Editor extends React.Component {
 
     createGraphFromDAG(content) {
         // Create a new JointJS graph from the DAG content using iterative layout.
-        const graph = new dia.Graph({}, { cellNamespace: namespace });
+        const graph = new joint.dia.Graph(); //stupid hack
+        // const graph = new joint.dia.Graph({}, { cellNamespace: namespace });
 
         //Log occupied positions on the canvas
         const occupiedPositions = {};
 
         // Create a map for quick node lookup.
         const nodeMap = {};
-        content.nodes.forEach(node => {
+        content.vertices.forEach(node => {
             nodeMap[node.id] = node;
         });
 
@@ -1002,8 +1013,9 @@ class Editor extends React.Component {
         // Level 0: all threat sources placed at X = 0.
         const nodeLevels = {};
         const queue = [];
-        content.nodes.forEach(node => {
-            if (node.type.startsWith('threat_source')) {
+        content.vertices.forEach(node => {
+            if (this.DAG_THREAT_SOURCES.has(node.type)) {
+            // if (node.type.startsWith('threat_source')) {
                 nodeLevels[node.id] = 0;
                 queue.push(node.id);
             }
@@ -1041,7 +1053,11 @@ class Editor extends React.Component {
             nodesInLevel.forEach((node, index) => {
                 const posX = level * 500;
                 const posY = index * 400 - yOffset;
-                const element = this.createElementFromDAG(node.type, node.id, node.label, posX, posY);
+                if (node == undefined) {
+                    console.log("Skipped undefined node");
+                    return;
+                }
+                const element = this.createElementFromDAG(node.type, node.id, node.text, posX, posY);
                 console.log("element", element);
                 //new joint.shapes.basic.Rect({
                 //    id: node.id,
@@ -1055,7 +1071,9 @@ class Editor extends React.Component {
 
         // Add edges.
         content.edges.forEach(edge => {
-            const link = new shapes.standard.Link();
+            // defaultLink: new joint.shapes.coras.defaultLink({
+            // const link = new shapes.standard.Link();
+            const link = new joint.shapes.standard.Link();
             link.source({ id: edge.source });
             link.target({ id: edge.target });
             graph.addCell(link);
