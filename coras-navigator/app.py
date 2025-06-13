@@ -40,7 +40,7 @@ template = """
         }]
     } 
     The rules you must follow to generate the JSON file are:
-    - Vertices type can be "human_threat_accidental", "human_threat_deliberate", "non_human_threat", "threat_scenario", "unwanted_incident", or "asset"
+    - Vertices type can be "human_threat_non_malicious", "human_threat_malicious", "non_human_threat", "threat_scenario", "unwanted_incident", or "asset"
     - Every vertices must have a type, an id and a text
     - Every edges must have a source and a target
     - A threat can initiate a threat scenario or an unwanted incident
