@@ -25,8 +25,8 @@ class Summarizer:
 
 class SimpleSummarizer(Summarizer):
     system_prompt = """
-        You are an assistant that summarizes text input by the user. Your goal is to return a summary from the user input and nothing else.
-        In your answer, write directly your summary of the text. Do not write any introductory sentence such as 'Here is a summary...'.
+        You are a helpful assistant that organizes a provided system description into a structured, clear and comprehensive description.
+        In your answer, do not write any introductory sentence such as 'Here is a description...'.
         """
 
     def summarize(self, text: str) -> str:
@@ -36,7 +36,7 @@ class SimpleSummarizer(Summarizer):
                 "content": self.system_prompt
             }, {
                 "role": "user",
-                "content": f"Write a summary of this text: {text}"
+                "content": f"Reformulate this text following the instructions you were given: {text}"
             }]
         )
 

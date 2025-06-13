@@ -120,5 +120,5 @@ if __name__ == '__main__':
     documents_count = rag_cwe.load_documents(DOCUMENTS_CWE)
     print(f"The CWE vector store now contains {documents_count} entries.")    
 
-    app.run(debug=True, port=5049)
+    app.run(debug=True, port=5050)
 
