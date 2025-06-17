@@ -47,6 +47,8 @@ class CWE:
     RELATED_ATTACK_PATTERNS = 21
     NOTES = 22
 
+NAVIGATOR_DIR = "./coras-navigator/"
+
 def format_capec_document_row(row, ids) -> str:
     return (f"{row[Capec.NAME]}: {row[Capec.DESCRIPTION]}\n", ids)
 
@@ -74,19 +76,20 @@ def format_csv_documents(filenames_in: list[str], filename_out: str, format_row)
 
 if __name__ == "__main__":
     format_csv_documents([
-            "rag-docs/capec-mechanisms-of-attack.csv"
+            f"{NAVIGATOR_DIR}rag-docs/capec-mechanisms-of-attack.csv"
         ], 
-        "rag-docs/capec-mechanisms-of-attack.txt",
+        f"{NAVIGATOR_DIR}rag-docs/capec-mechanisms-of-attack.txt",
         format_capec_document_row
     )
 
     # CWE Documents
     format_csv_documents([
-            "rag-docs/cwe-software-development.csv",
-            "rag-docs/cwe-hardware-design.csv",
-            "rag-docs/cwe-research-concepts.csv"
+            f"{NAVIGATOR_DIR}rag-docs/cwe-software-development.csv",
+            f"{NAVIGATOR_DIR}rag-docs/cwe-hardware-design.csv",
+            f"{NAVIGATOR_DIR}rag-docs/cwe-research-concepts.csv"
         ],
-        "rag-docs/cwe-records.txt",
+        f"{NAVIGATOR_DIR}rag-docs/cwe-records.txt",
         format_cwe_document_row   
     )
- 
+    
+    print("Successfully formatted RAG docs")

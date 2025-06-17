@@ -3,8 +3,8 @@ import zipfile
 import os
 import json
 
-TEMP_DIR = "./.temp/"
-RAG_DOCS_DIR = "./rag-docs/"
+TEMP_DIR = "./coras-navigator/.temp/"
+RAG_DOCS_DIR = "./coras-navigator/rag-docs/"
 
 def create_temp_directory():
     if not os.path.exists(TEMP_DIR):
@@ -37,7 +37,7 @@ def rename(filename: str, new_filename: str):
     os.rename(filename, new_filename)
 
 def download_rag_docs():
-    json = get_json_from_file("./resource/rag-sources.json")
+    json = get_json_from_file("./coras-navigator/resource/rag-sources.json")
     
     for source in json["zip_sources"]: 
         if os.path.exists(f"{RAG_DOCS_DIR}{source['final_filename']}"):

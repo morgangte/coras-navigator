@@ -27,8 +27,9 @@ Then,
 ```
 $ cd <project-directory>
 $ conda activate <env-name>
-$ make ui
-$ make navigator
+(<env-name>) $ make download-rag-documents
+(<env-name>) $ make ui
+(<env-name>) $ make navigator
 ```
 
 You will now be able to access the CORAS Navigator at `http://localhost:1234/`.
@@ -40,6 +41,14 @@ Deactivate the virtual environment with:
 ```
 (<env-name>) $ conda deactivate 
 ``` 
+
+## Help
+
+You can list available actions with:
+
+```
+$ make
+```
 
 ## Tests
 
@@ -70,7 +79,7 @@ Since langchain-ollama is not available on Conda, use pip instead:
 ```
 $ conda activate <env-name>
 (<env-name>) $ pip install -U langchain-ollama
-$ conda deactivate
+(<env-name>) $ conda deactivate
 ```
 
 - PyPDF for handling pdf files:
