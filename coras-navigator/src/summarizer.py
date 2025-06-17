@@ -1,21 +1,24 @@
-from model import *
 from rag import DocumentExtension
 
 # LLM
-from langchain_ollama import OllamaLLM
+from langchain_ollama import ChatOllama, OllamaLLM
+from langchain_core.messages import AIMessage
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 # Prompt template
-from langchain_core.prompts import PromptTemplate
+from langchain_core.prompts import ChatPromptTemplate, PromptTemplate
 # Import documents
 from langchain_community.document_loaders import PyPDFLoader
 # Summarize
 from langchain.chains.summarize import load_summarize_chain
 
 class Summarizer:
-    model: Model
+    llm = None
     
-    def __init__(self, model: Model):
-        self.model = model
+    def __init__(self, model: str):
+        self.llm = ChatOllama(
+            model=model,
+            temperature=0.05
+        )
 
     def summarize(self, text: str) -> str:
         raise Exception("Invalid class: summarize() not implemented")
@@ -30,17 +33,17 @@ class SimpleSummarizer(Summarizer):
         """
 
     def summarize(self, text: str) -> str:
-        summary = self.model.complete(
-            messages=[{
-                "role": "system",
-                "content": self.system_prompt
-            }, {
-                "role": "user",
-                "content": f"Reformulate this text following the instructions you were given: {text}"
-            }]
-        )
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", self.system_prompt),
+            ("human", "Reformulate this text following the instructions you were given: {text}")
+        ])
 
-        return summary
+        chain = prompt | self.llm
+        result = chain.invoke({
+            "text": text
+        })
+
+        return result.content
 
 class PDFSummarizer(Summarizer):
     question_template = """
@@ -99,14 +102,4 @@ class PDFSummarizer(Summarizer):
         for page in pdf_loader.lazy_load():
             pages.append(page)
         return pages
-
-if __name__ == "__main__":
-    summarizer = PDFSummarizer(OllamaModel("llama3.2:3b"))
-    summarizer.summarize_files([(
-        "test-data/astrophysics.pdf",
-        DocumentExtension.PDF
-    ), (
-        "test-data/stellar-feedback.pdf",
-        DocumentExtension.PDF
-    )])
 

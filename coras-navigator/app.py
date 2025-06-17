@@ -2,7 +2,6 @@ from flask import Flask, request
 from flask_cors import CORS
 import os
 
-from model import *
 from summarizer import *
 from navigator import *
 
@@ -21,8 +20,8 @@ DOCUMENTS_CWE = [(
         DocumentExtension.TXT
     )]
 
-summarizer = SimpleSummarizer(OllamaModel("llama3:70b-instruct"))
-assessor = SimpleRiskAssessor(OllamaModel("llama3:70b-instruct"))
+summarizer = SimpleSummarizer("llama3:70b-instruct")
+assessor = SimpleRiskAssessor("llama3:70b-instruct")
 rag = ContextualRAG(embedding_model="llama3.2:3b", directory="./vector-stores/main/")
 rag_cwe = NaiveRAG(embedding_model="llama3.2:3b", directory="./vector-stores/cwe/")
 
@@ -135,7 +134,7 @@ Given the text qbove, you should answer with the following JSON:
     ]
 }
 """
-formatter = SimpleJSONFormatter(OllamaModel("llama3:70b-instruct"), template)
+formatter = SimpleJSONFormatter("llama3:70b-instruct", template)
 
 navigator = CorasNavigatorUI(summarizer, rag, rag_cwe, assessor, formatter)
 

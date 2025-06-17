@@ -1,10 +1,15 @@
-from model import *
+from langchain_ollama import ChatOllama
+from langchain_core.messages import AIMessage
+from langchain_core.prompts import ChatPromptTemplate
 
 class RiskAssessor:
-    model: Model
+    llm = None
 
-    def __init__(self, model: Model):
-        self.model = model
+    def __init__(self, model: str):
+        self.llm = ChatOllama(
+            model=model,
+            temperature=0.05
+        )
 
     def assess(self, description: str, context: str) -> str:
         raise Exception("Invalid class: assess() not implemented")
@@ -17,22 +22,16 @@ Then, from this high-level analysis, specify for each risk the following items: 
 """
 
     def assess(self, description: str, context: str) -> str:
-        risk_assessment = self.model.complete(
-            messages=[{
-                "role": "system",
-                "content": self.system_prompt
-            }, {
-                "role": "user",
-                "content": f"""
-Analyze the following system: 
-###
-{description}
-###
-<context>
-{context}
-</context>
-"""
-            }]
-        )
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", self.system_prompt),
+            ("human", "Analyze the following system:\n###\n{description}\n###\n<context>\n{context}\n</context>")
+        ])
 
-        return risk_assessment
+        chain = prompt | self.llm
+        result = chain.invoke({
+            "description": description,
+            "context": context
+        })
+
+        return result.content
+

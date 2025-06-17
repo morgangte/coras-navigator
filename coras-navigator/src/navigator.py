@@ -2,7 +2,6 @@ import os
 from datetime import datetime
 
 from message import *
-from model import *
 from summarizer import *
 from rag import *
 from assessor import *
@@ -29,7 +28,7 @@ class CorasNavigator:
         return self.summary
     
     def summarize_files(self, directory: str) -> str:
-        files_summarizer = PDFSummarizer(OllamaModel("llama3.2:3b"))
+        files_summarizer = PDFSummarizer("llama3.2:3b")
         
         files = []
         for filename in os.listdir(directory):  
@@ -90,38 +89,4 @@ class CorasNavigatorUI(CorasNavigator):
         print("Formatting...")
         formatted = self.format(analysis)
         return (analysis, self.extract_json(formatted))        
-
-class CorasNavigatorCLI(CorasNavigator): 
-    def start(self) -> None:
-        description, summary = self.summarization()
-        context = self.retrieve(summary)
-        print(f"Retrieved documents: \n{Colors.WARNING}{context}{Colors.ENDC}")
-        analysis = self.assess_risks(summary, context)
-        print(f"Analysis: \n{Colors.OKBLUE}{analysis}{Colors.ENDC}")
-        formatted = self.format(analysis)
-        print(f"JSON: \n{Colors.OKBLUE}{formatted}{Colors.ENDC}")
-        self.JSON_extraction(formatted)
-
-    def summarization(self) -> (str, str):
-        description = input("Please provide a context description of a system: \n>>> ")
-        if description == "exit":
-            exit(0)
-        summary = self.summarize(description)
-        
-        user_agrees = input(f"Here is a summary of the context description you provided: \n{Colors.OKBLUE}{summary}{Colors.ENDC}\n\nDoes this summary accurately reflect your system? ('yes' or 'no'): \n>>> ")
-        while user_agrees != "yes" and user_agrees != "no" and user_agrees != "exit":
-            user_agrees = input("Invalid input. Please type 'yes' or 'no': \n>>> ")            
-        
-        if user_agrees == "exit":
-            exit(0);
-        if user_agrees == "yes":
-            return description, summary
-        else:
-            return self.summarization()
-
-    def JSON_extraction(self, text: str) -> None:
-        if self.extract_json(text) == "":      
-            print(f"{Colors.FAIL}Absent ot Invalid JSON{Colors.ENDC}")
-        else:
-            print(f"{Colors.OKGREEN}Valid JSON{Colors.ENDC}")
 

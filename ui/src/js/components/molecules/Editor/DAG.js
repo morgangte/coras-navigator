@@ -210,6 +210,11 @@ function getVulnerabilitiesProperties(edge, nodePositions) {
     const margin = 150;
     const sourcePos = nodePositions[edge.source];
     const targetPos = nodePositions[edge.target];
+    if (sourcePos == undefined || targetPos == undefined) {
+        console.log("Error: undefined node position when displaying vulnerability");
+        return vulnerabilities;
+    }
+
     // distance between the two elements
     const distance = Math.abs(targetPos.x - sourcePos.x);
     // distance between two vulnerabilities

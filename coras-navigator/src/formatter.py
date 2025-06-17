@@ -1,36 +1,35 @@
-from model import *
+from langchain_core.messages import AIMessage
+from langchain_ollama import ChatOllama
+from langchain_core.prompts import ChatPromptTemplate
 
 class Formatter:
-    model: Model
-    system_prompt: str    
+    llm = None
+    template: str
 
-    def __init__(self, model: Model, template: str):
-        self.model = model
+    def __init__(self, model: str, template: str):
+        self.llm = ChatOllama(
+            model=model,
+            temperature=0.05
+        )
+        self.template = template
 
     def format(self, text: str) -> str:
         raise Exception("Invalid class: format() not implemented")
 
 class SimpleJSONFormatter(Formatter):
-    def __init__(self, model: Model, template: str):
-        self.model = model
-        self.system_prompt = f"""
-You are a helpul assistant that formats text input by the user into a structured JSON file following a pre-defined format. The JSON format you must follow is this one:
-{template}
-"""
+    system_prompt = "You are a helpul assistant that formats text input by the user into a structured JSON file following a pre-defined format. The JSON format you must follow is:\n{template}"
     
     def format(self, text: str) -> str:
-        formatted = self.model.complete(
-            messages=[{
-                "role": "system",
-                "content": self.system_prompt
-            }, {
-                "role": "user",
-                "content": f"""
-Format the following text: 
-{text}
-"""
-            }]
-        )
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", self.system_prompt),
+            ("human", "Format the following text:\n{text}")
+        ])
 
-        return formatted
+        chain = prompt | self.llm
+        result = chain.invoke({
+            "text": text,
+            "template": self.template
+        })
+
+        return result.content
 

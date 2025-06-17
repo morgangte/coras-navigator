@@ -19,7 +19,6 @@ import os
 from uuid import uuid4
 import json
 
-from model import *
 from message import *
 
 class DocumentExtension:
@@ -159,4 +158,3 @@ def is_list_equal_to_json_file_content(data: list, file_path: str) -> bool:
             return True
 
     return False
-

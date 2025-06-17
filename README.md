@@ -16,10 +16,10 @@ $ conda create -n <env-name>
 
 Connect to the SINTEF server with port forwarding:
 - Port 1234: UI React App
-- Port 5049: CORAS Navigator API
+- Port 5050: CORAS Navigator API
 
 ```
-$ ssh -L 1234:localhost:1234 -L 5049:localhost:5049 <username>@mainframe.sintef.no
+$ ssh -L 1234:localhost:1234 -L 5050:localhost:5050 <username>@mainframe.sintef.no
 ```
 
 Then,
@@ -69,7 +69,7 @@ Since langchain-ollama is not available on Conda, use pip instead:
 
 ```
 $ conda activate <env-name>
-$ pip install -U langchain-ollama
+(<env-name>) $ pip install -U langchain-ollama
 $ conda deactivate
 ```
 
