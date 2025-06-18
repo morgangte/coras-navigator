@@ -18,7 +18,7 @@ class SimpleRiskAssessor(RiskAssessor):
     system_prompt = """
 You are an expert in cybersecurity risk assessment. From the description of a system (delimited by ###) and provided context (delimited by <context></context>), you perform a cybersecurity risk assessment of the system.
 First, generate a high-level risk table that contains for each risk: Who/What causes the risk? How? What is the incident? What does it harm (asset)? What makes it possible (vulnerabilities)? During your analysis, examine different attack surfaces and various possible threats (human accidental, human deliberate or non-human threats). Think of at least 2 risks.
-Then, from this high-level analysis, specify for each risk the following items: the threat, one or multiple consecutive threat scenarios, the unwanted incident, the impacted assets, and the associated vulnerabilities.
+Then, from this high-level analysis, specify for each risk the following items: the threat, one or multiple consecutive threat scenarios with their associated vulnerabilities, the unwanted incident, and the impacted assets.
 """
 
     def assess(self, description: str, context: str) -> str:

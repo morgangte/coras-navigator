@@ -88,7 +88,9 @@ function createElementFromDAG(type, id, label, posX, posY) {
 export function createGraphFromDAG(content) {
     // Create a new JointJS graph from the DAG content using iterative layout.
     const graph = new joint.dia.Graph(); //stupid hack
-
+    if (!content.hasOwnProperty("vertices") || !content.hasOwnProperty("edges")) {
+        return graph;
+    }
     // Log occupied positions on the canvas
     const occupiedPositions = {};
 
@@ -223,11 +225,11 @@ function getVulnerabilitiesProperties(edge, nodePositions) {
     const b = -sourcePos.y;
     // x-middle point between the two elements
     const center = sourcePos.x + Math.abs(targetPos.x - sourcePos.x)/2;
-    
+   
     let i = 0;
     for (let vulnerability of edge.vulnerabilities) {
         let spacing = (Math.floor(i/2) + 1) * gap * (i%2 == 0 ? 1 : -1);
-        let x = center + spacing;
+        let x = (edge.vulnerabilities.length == 1) ? center : center + spacing;
 
         vulnerabilities.push({
             x: x,
@@ -239,7 +241,7 @@ function getVulnerabilitiesProperties(edge, nodePositions) {
         i += 1;
     }
 
-    console.log("source: " + sourcePos.x, sourcePos.y + ", target: " + targetPos.x, targetPos.y);
+    // console.log("source: " + sourcePos.x, sourcePos.y + ", target: " + targetPos.x, targetPos.y);
     return vulnerabilities;
 }
 

@@ -82,7 +82,7 @@ class CorasNavigatorUI(CorasNavigator):
         if text == "":
             return None
         
-        print(f"Retrieve context for text: {text}")
+        # print(f"Retrieve context for text: {text}")
         context = self.retrieve(text)
         print("Risk assessment...")
         analysis = self.assess_risks(text, context)

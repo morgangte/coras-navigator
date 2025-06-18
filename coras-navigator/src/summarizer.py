@@ -15,7 +15,8 @@ class Summarizer:
     llm = None
     
     def __init__(self, model: str):
-        self.llm = ChatOllama(
+        # self.llm = ChatOllama(
+        self.llm = OllamaLLM( 
             model=model,
             temperature=0.05
         )
@@ -38,12 +39,17 @@ class SimpleSummarizer(Summarizer):
             ("human", "Reformulate this text following the instructions you were given: {text}")
         ])
 
+        prompt = ChatPromptTemplate.from_template("""System description: {text}
+
+Do not write any introductory sentence such as 'Here is a description...'. Provide a structured, clear and comprehensive description of the system: """)
+
         chain = prompt | self.llm
         result = chain.invoke({
             "text": text
         })
 
-        return result.content
+        return result
+        # return result.content
 
 class PDFSummarizer(Summarizer):
     question_template = """
