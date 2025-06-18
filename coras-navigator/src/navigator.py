@@ -84,6 +84,7 @@ class CorasNavigatorUI(CorasNavigator):
         
         # print(f"Retrieve context for text: {text}")
         context = self.retrieve(text)
+        print(f"Retrieved context: {context}")
         print("Risk assessment...")
         analysis = self.assess_risks(text, context)
         print("Formatting...")

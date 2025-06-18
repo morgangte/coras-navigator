@@ -50,7 +50,13 @@ class CWE:
 NAVIGATOR_DIR = "./coras-navigator/"
 
 def format_capec_document_row(row, ids) -> str:
-    return (f"{row[Capec.NAME]}: {row[Capec.DESCRIPTION]}\n", ids)
+    mitigations = list(filter(lambda x: x != '', row[Capec.MITIGATIONS].split("::")))
+
+    text = f"**Attack pattern**: {row[Capec.NAME]}\n**Description**: {row[Capec.DESCRIPTION]}\n**Mitgations**:\n"
+    for mitigation in mitigations:
+        text += f"- {mitigation}\n"
+    print(text)
+    return (f"{text}\n", ids)
 
 def format_cwe_document_row(row, cwe_ids) -> str:
     if row[CWE.ID] in cwe_ids:
