@@ -15,7 +15,6 @@ class Summarizer:
     llm = None
     
     def __init__(self, model: str):
-        # self.llm = ChatOllama(
         self.llm = OllamaLLM( 
             model=model,
             temperature=0.05
@@ -49,7 +48,6 @@ Do not write any introductory sentence such as 'Here is a description...'. Provi
         })
 
         return result
-        # return result.content
 
 class PDFSummarizer(Summarizer):
     question_template = """

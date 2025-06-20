@@ -7,24 +7,23 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 import faiss
 from langchain_community.docstore.in_memory import InMemoryDocstore
 from langchain_community.vectorstores import FAISS
-# Embeddings
-from langchain_ollama import OllamaEmbeddings
 # Models
-from langchain_ollama import ChatOllama
+from langchain_ollama import ChatOllama, OllamaEmbeddings
 # Retrievers
 from langchain.retrievers import ContextualCompressionRetriever
 from langchain.retrievers.document_compressors import LLMChainExtractor
+
+from langchain_core.prompts import ChatPromptTemplate
 
 import os
 from uuid import uuid4
 import json
 
-from message import *
-
 class DocumentExtension:
     CSV = "CSV"
     TXT = "TXT"
     PDF = "PDF"
+    JSON = "JSON"
 
 class RAG:
     VECTOR_STORE_DOCUMENTS_RECORD = "vector-store-documents.json"
@@ -90,7 +89,7 @@ class RAG:
             documents = loader.load()
         elif extension == DocumentExtension.TXT:
             with open(path, "r") as file:
-                documents = [Document(page_content=content) for content in file.read().split("\n")]
+                documents = [Document(page_content=content) for content in file.read().split(";\n")]
             
         # text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
         # documents = text_splitter.split_documents(documents)
@@ -147,7 +146,71 @@ class ContextualRAG(RAG):
 
         results = self.compression_retriever.invoke(query)
         return [result.page_content for result in results]
-    
+
+class CapecRAG(RAG):
+    complete_capec = None
+    llm = None
+
+    def __init__(self, embedding_model: str, directory: str, complete_capec: (str, DocumentExtension)):
+        self.embeddings = OllamaEmbeddings(model=embedding_model)
+        self.directory = directory
+
+        complete_capec_file, extension = complete_capec
+        if extension != DocumentExtension.JSON:
+            raise Exception("Only JSON file are supported")
+
+        self.complete_capec = self.get_complete_capec(complete_capec_file)
+ 
+    def initialize(self):
+        self.llm = ChatOllama(
+            model="llama3:8b",
+            temperature=0
+        )
+
+    def get_complete_capec(self, filename):
+        capec_dict = {}
+            
+        with open(filename, "r") as json_file:
+            capec_dict = json.load(json_file)
+
+        return capec_dict              
+
+    def search(self, query, k=6):
+        if self.llm is None:
+            self.initialize()
+
+        results = self.vector_store.similarity_search(query=query, k=k)
+        complete_results = ""
+        for result in results:
+            capec_id = get_capec_id_from_text(result.page_content)
+            complete_results += self.complete_capec[capec_id]
+
+        system_prompt = "You are a helpful assistant that determines whether given information items (delimited by '###') relates to a certain context (delimited by <context></context>) or not. You return the top 3 information items that relate best to the context. For each information item you decide to return, copy all the details including the description, vulnerabilities (if there are any), and mitigations"
+        human_prompt = """You will be given a context and information items. Return the top 3 detailed (just copy the description, vulnerabilities and mitigations) information items that relate best to the context.
+Context:
+<context>
+{context}
+</context>
+
+Information items: 
+###
+{items}
+###"""
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", system_prompt),
+            ("human", human_prompt)
+        ])
+        chain = prompt | self.llm
+        result = chain.invoke({
+            "context": query,
+            "items": complete_results
+        })
+
+        return [result.content]
+
+def get_capec_id_from_text(text: str) -> str:
+    return text.split('-')[1].split(']')[0]
+
 def is_list_equal_to_json_file_content(data: list, file_path: str) -> bool:
     if not os.path.exists(file_path):
         return False
@@ -158,3 +221,4 @@ def is_list_equal_to_json_file_content(data: list, file_path: str) -> bool:
             return True
 
     return False
+

@@ -10,23 +10,19 @@ CORS(app)
 
 UPLOADS_DIR = "uploaded-files"
 
-DOCUMENTS_TXT = [(
-        "./rag-docs/capec-mechanisms-of-attack.txt",
-        DocumentExtension.TXT
-    )]
-
-DOCUMENTS_CWE = [(
-        "./rag-docs/cwe-records.txt",
-        DocumentExtension.TXT
-    )]
-
 summarizer = SimpleSummarizer("llama3:70b-instruct")
 assessor = SimpleRiskAssessor("llama3:70b-instruct")
-rag = ContextualRAG(embedding_model="llama3.2:3b", directory="./vector-stores/main/")
-rag_cwe = NaiveRAG(embedding_model="llama3.2:3b", directory="./vector-stores/cwe/")
+rag = CapecRAG(
+    embedding_model="llama3.2:3b", 
+    directory="./vector-stores/main/", 
+    complete_capec=(
+        "./rag-docs/capec-detailed.json",
+        DocumentExtension.JSON    
+    )
+)
 formatter = SimpleJSONFormatter("llama3:70b-instruct")
 
-navigator = CorasNavigatorUI(summarizer, rag, rag_cwe, assessor, formatter)
+navigator = CorasNavigatorUI(summarizer, rag, assessor, formatter)
 
 @app.route('/coras_navigator_api/upload_file', methods=["POST"])
 def upload_file():
@@ -91,11 +87,11 @@ def perform_analysis():
     }
 
 if __name__ == '__main__': 
-    documents_count = rag.load_documents(DOCUMENTS_TXT)
-    print(f"The main vector store now contains {documents_count} entries.")    
+    documents_count = rag.load_documents([(
+        "./rag-docs/capec-abstract.txt",
+        DocumentExtension.TXT
+    )])
+    print(f"The vector store now contains {documents_count} entries.")    
     
-    documents_count = rag_cwe.load_documents(DOCUMENTS_CWE)
-    print(f"The CWE vector store now contains {documents_count} entries.")    
-
     app.run(debug=True, port=5050)
 

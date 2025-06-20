@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
+import json
 
-from message import *
 from summarizer import *
 from rag import *
 from assessor import *
@@ -10,14 +10,12 @@ from formatter import *
 class CorasNavigator:
     summarizer: Summarizer
     rag: RAG
-    rag_cwe: RAG
     assessor: RiskAssessor
     formatter: Formatter
 
-    def __init__(self, summarizer: Summarizer, rag: RAG, rag_cwe: RAG, assessor: RiskAssessor, formatter: Formatter):
+    def __init__(self, summarizer: Summarizer, rag: RAG, assessor: RiskAssessor, formatter: Formatter):
         self.summarizer = summarizer
         self.rag = rag
-        self.rag_cwe = rag_cwe
         self.assessor = assessor
         self.formatter = formatter
     
@@ -52,12 +50,10 @@ class CorasNavigator:
 
     def retrieve(self, text: str) -> str:
         context = ""
-        results = self.rag.search(text, k=3)
+        results = self.rag.search(text)
+
         for result in results:
-            context += result + "\nVulnerabilities: \n"
-            vulnerabilities = self.rag_cwe.search(result, k=2)
-            for vulnerability in vulnerabilities:
-                context += f"- {vulnerability}\n"
+            context += result + "\n"
         return context
 
     def assess_risks(self, description: str, context: str) -> str:
@@ -91,3 +87,16 @@ class CorasNavigatorUI(CorasNavigator):
         formatted = self.format(analysis)
         return (analysis, self.extract_json(formatted))        
 
+def extract_JSON(text: str):
+    try:
+        start = text.index('{')
+        end = text.rindex('}')
+    except ValueError as error:
+        raise ValueError("No JSON object found") from error
+       
+    try:
+        json_object = json.loads(text[start:end+1])
+    except ValueError as error:
+        raise Exception("Invalid JSON") from error
+
+    return json_object

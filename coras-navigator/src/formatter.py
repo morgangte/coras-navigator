@@ -108,7 +108,6 @@ The rules you must follow to generate the JSON file are:
     "edges"
   ]
 }
-
     examples = [
         {"input": """**Risk 1: Insider Attack on Tester Computer**
 * **Threat:** Insider with access to tester computer
@@ -194,8 +193,8 @@ The rules you must follow to generate the JSON file are:
 }}"""
         }
     ]
-  
     def format(self, text: str) -> str:
+        print("Formatter::format() called")
         example_prompt = ChatPromptTemplate.from_messages([
             ("human", "{input}"),
             ("ai", "{output}")
@@ -219,4 +218,3 @@ The rules you must follow to generate the JSON file are:
         })
 
         return json.dumps(result_dict)
-
