@@ -8,7 +8,7 @@ import FileUpload from './FileUpload';
 const CORAS_NAVIGATOR_IP = "localhost";
 const CORAS_NAVIGATOR_PORT = 5050;
 
-const DEVELOPMENT_MODE = true;
+const DEVELOPMENT_MODE = false;
 
 class Navigator extends React.Component {
     constructor(props) {
@@ -33,7 +33,8 @@ class Navigator extends React.Component {
             displaySummaryStatusMessage: false,
             displayAnalysis: false,
             analysisStatusMessage: "Generating analysis...",
-            displayAnalysisStatusMessage: false
+            displayAnalysisStatusMessage: false,
+            loading: false
         };
         
         // DEVELOPMENT MODE ONLY
@@ -90,7 +91,8 @@ class Navigator extends React.Component {
         this.setState({
             inputsDisabled: true,
             summaryStatusMessage: "Generating a structured description of the system...",
-            displaySummaryStatusMessage: true
+            displaySummaryStatusMessage: true,
+            loading: true
         });
 
         fetch("http://" + CORAS_NAVIGATOR_IP + ":" + CORAS_NAVIGATOR_PORT + "/coras_navigator_api/generate_summary", {
@@ -106,7 +108,8 @@ class Navigator extends React.Component {
                         summary: response_json['summary'], 
                         inputsDisabled: false,
                         displaySummary: true,
-                        displaySummaryStatusMessage: false
+                        displaySummaryStatusMessage: false,
+                        loading: false
                     });                
                 });
             } else {
@@ -117,7 +120,8 @@ class Navigator extends React.Component {
             this.setState({
                 inputsDisabled: false,
                 summaryStatusMessage: "Something went wrong.",
-                displaySummaryStatusMessage: true
+                displaySummaryStatusMessage: true,
+                loading: false
             });
         });
     }
@@ -125,7 +129,8 @@ class Navigator extends React.Component {
     onSummaryAccurateYesButtonClick() {
         this.setState({
             displayAnalysisStatusMessage: true,
-            analysisStatusMessage: "Generating analysis..."
+            analysisStatusMessage: "Generating analysis...",
+            loading: true
         });
 
         fetch("http://" + CORAS_NAVIGATOR_IP + ":" + CORAS_NAVIGATOR_PORT + "/coras_navigator_api/perform_analysis", {
@@ -137,6 +142,7 @@ class Navigator extends React.Component {
                 response.json().then((response_json) => {
                     this.editorRef.current.changeGraph('threat');
                     this.setState({
+                        loading: false,
                         analysis: response_json['analysis'], 
                         inputsDisabled: false,
                         displayAnalysis: true,
@@ -152,6 +158,7 @@ class Navigator extends React.Component {
         }).catch((error) => {
             console.log(error);
             this.setState({
+                loading: false,
                 inputsDisabled: false,
                 analysisStatusMessage: "Something went wrong.",
                 displayAnalysisStatusMessage: true
@@ -161,6 +168,7 @@ class Navigator extends React.Component {
 
     onSummaryAccurateNoButtonClick() {
         this.setState({
+            loading: false,
             displayAnalysis: false,
             displayAnalysisStatusMessage: true,
             analysisStatusMessage: "Please edit the context description of your system."    
@@ -211,7 +219,12 @@ class Navigator extends React.Component {
 
     statusMessage(condition, message) {
         if (condition) {
-            return (<p>{message}</p>);
+            return (
+                <div className="navigator-status-message-container">
+                    {this.state.loading ? <div className="animated-loading-element"></div> : null}
+                    <p>{message}</p>
+                </div>
+            );
         } else {
             return null;
         }
