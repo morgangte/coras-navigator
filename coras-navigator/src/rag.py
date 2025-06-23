@@ -185,14 +185,14 @@ class CapecRAG(RAG):
             capec_id = get_capec_id_from_text(result.page_content)
             complete_results += self.complete_capec[capec_id]
 
-        system_prompt = "You are a helpful assistant that determines whether given information items (delimited by '###') relates to a certain context (delimited by <context></context>) or not. You return the top 3 information items that relate best to the context. For each information item you decide to return, copy all the details including the description, vulnerabilities (if there are any), and mitigations"
-        human_prompt = """You will be given a context and information items. Return the top 3 detailed (just copy the description, vulnerabilities and mitigations) information items that relate best to the context.
+        system_prompt = "You are a helpful assistant that determines whether given information items (delimited by '###') relates to a certain context (delimited by <context></context>) or not. You return the top 3 detailed capec entries that relate best to the context. For each capec entry you decide to return, copy all the details including the description, vulnerabilities (if there are any), and mitigations"
+        human_prompt = """You will be given a context and information items. Return the top 3 detailed (just copy the description, vulnerabilities and mitigations) capec entries that relate best to the context.
 Context:
 <context>
 {context}
 </context>
 
-Information items: 
+Capec entries: 
 ###
 {items}
 ###"""
