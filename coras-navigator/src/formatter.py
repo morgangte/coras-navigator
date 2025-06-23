@@ -10,7 +10,7 @@ class Formatter:
     def __init__(self, model: str):
         self.llm = ChatOllama(
             model=model,
-            temperature=0.05
+            temperature=0
         )
 
     def format(self, text: str) -> str:

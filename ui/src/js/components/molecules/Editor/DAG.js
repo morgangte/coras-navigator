@@ -34,9 +34,7 @@ function createElementFromDAG(type, id, label, posX, posY) {
         type = "direct_asset";
     } else if (type == "non_human_threat") {
         type = "threat_non_human";
-    } else if (type == "") {
-        console.log("Create element vulnerability");
-    }
+    } 
     
     // console.log("Looking for svg of " + type); 
     const svg = ToolDefinitions.find(tool => tool.id === type);
@@ -85,6 +83,57 @@ function createElementFromDAG(type, id, label, posX, posY) {
     return shape;
 }
 
+function existingNode(node, existingNodes) {
+    for (const existing of existingNodes) {
+        if (existing.type !== node.type) {
+            continue;
+        } 
+        if (existing.text !== node.text) {
+            continue;
+        }
+        return existing;
+    }
+    return null;
+}
+
+function contentWithoutDuplicates(content) {
+    let prunedContent = {
+        vertices: [],
+        edges: []
+    };
+    // Map of nodes (id -> node) for quick lookup
+    let allNodes = new Map();
+    for (const node of content.vertices) {
+        allNodes.set(node.id, node);
+    }
+    // Unique nodes
+    let prunedNodes = new Map();
+
+    // Copy all unique vertices
+    for (let node of content.vertices) {
+        if (existingNode(node, prunedContent.vertices) == null) {
+            prunedContent.vertices.push(node);
+            prunedNodes.set(node.id, node);
+        }
+    }
+    // Copy edges and replace with new ids
+    for (let edge of content.edges) {
+        if (!prunedNodes.has(edge.source)) {
+            const originalNode = allNodes.get(edge.source);
+            const newNode = existingNode(originalNode, prunedContent.vertices);
+            edge.source = newNode.id;
+        }
+        if (!prunedNodes.has(edge.target)) {
+            const originalNode = allNodes.get(edge.target);
+            const newNode = existingNode(originalNode, prunedContent.vertices);
+            edge.target = newNode.id;
+        }
+        prunedContent.edges.push(edge);
+    }
+
+    return prunedContent;
+}
+
 export function createGraphFromDAG(content) {
     // Create a new JointJS graph from the DAG content using iterative layout.
     const graph = new joint.dia.Graph(); //stupid hack
@@ -93,6 +142,10 @@ export function createGraphFromDAG(content) {
     }
     // Log occupied positions on the canvas
     const occupiedPositions = {};
+
+    // Content with unique nodes (the LLM can generate multiple times the same element)
+    content = contentWithoutDuplicates(content);
+    console.log("Content with unique nodes: ", content);
 
     // Create a map for quick node lookup.
     const nodeMap = {};
