@@ -8,7 +8,7 @@ import FileUpload from './FileUpload';
 const CORAS_NAVIGATOR_IP = "localhost";
 const CORAS_NAVIGATOR_PORT = 5050;
 
-const DEVELOPMENT_MODE = true;
+const DEVELOPMENT_MODE = false;
 
 class Navigator extends React.Component {
     constructor(props) {
