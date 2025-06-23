@@ -221,8 +221,8 @@ function getVulnerabilitiesProperties(edge, nodePositions) {
     const distance = Math.abs(targetPos.x - sourcePos.x);
     // distance between two vulnerabilities
     const gap = Math.max(25, distance - 2*margin) / edge.vulnerabilities.length;
-    const a = -(targetPos.y - sourcePos.y) / (targetPos.x - sourcePos.x);
-    const b = -sourcePos.y;
+    const a = (targetPos.y - sourcePos.y) / (targetPos.x - sourcePos.x);
+    const b = sourcePos.y;
     // x-middle point between the two elements
     const center = sourcePos.x + Math.abs(targetPos.x - sourcePos.x)/2;
    
