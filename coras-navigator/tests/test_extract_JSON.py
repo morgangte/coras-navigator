@@ -1,4 +1,4 @@
-from message import *
+from navigator import extract_JSON
 from run_test import run_test
 
 def test_extract_JSON_no_JSON():

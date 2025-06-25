@@ -113,5 +113,5 @@ if __name__ == '__main__':
     )])
     print(f"The vector store now contains {documents_count} entries.")    
     
-    app.run(debug=True, port=5050)
+    app.run(debug=True, port=5242)
 

@@ -6,7 +6,7 @@ import Editor from '../Editor/Editor';
 import FileUpload from './FileUpload';
 
 const CORAS_NAVIGATOR_IP = "localhost";
-const CORAS_NAVIGATOR_PORT = 5050;
+const CORAS_NAVIGATOR_PORT = 5242;
 
 const DEVELOPMENT_MODE = false;
 
