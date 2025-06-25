@@ -22,7 +22,7 @@ rag = CapecRAG(
 )
 formatter = SimpleJSONFormatter("llama3:70b-instruct")
 
-navigator = CorasNavigatorUI(summarizer, rag, assessor, formatter)
+navigator = CorasNavigator(summarizer, rag, assessor, formatter)
 
 @app.route('/coras_navigator_api/upload_file', methods=["POST"])
 def upload_file():
@@ -68,22 +68,42 @@ def generate_summary():
     # print(f"Generated summary: {summary}")
 
     json_data = request.get_json()
+    print(f"Received JSON: {json_data}")
+
     summary = navigator.summarize(json_data['context-description'])
     return {
         'summary': summary
     }
 
-@app.route('/coras_navigator_api/perform_analysis', methods=["POST"])
-def perform_analysis():
+@app.route('/coras_navigator_api/generate_risks', methods=["POST"])
+def generate_risks():
     json_data = request.get_json()
     print(f"Received JSON: {json_data}")
 
-    analysis, coras_json = navigator.perform_analysis(navigator.get_summary())
-    print(f"Generated CORAS Threat Model: {coras_json}")
+    print("Retrieve context...")
+    context = navigator.retrieve(navigator.get_summary())
+    print(f"Retrieved context: \n{context}")
+
+    print("Identifying risks...")
+    analysis = navigator.assess_risks(navigator.get_summary(), context)
+
+    # analysis, coras_json = navigator.perform_analysis(navigator.get_summary())
     
     return {
         'analysis': analysis,
-        'coras': coras_json
+    }
+
+@app.route('/coras_navigator_api/generate_coras_model', methods=["POST"])
+def generate_coras_model():
+    json_data = request.get_json()
+    print(f"Received JSON: {json_data}")
+
+    print("Formatting...")
+    model = navigator.extract_json(navigator.format(navigator.get_risks()))
+    print(f"Generated CORAS Model: \n{model}")
+    
+    return {
+        'coras_model': model
     }
 
 if __name__ == '__main__': 

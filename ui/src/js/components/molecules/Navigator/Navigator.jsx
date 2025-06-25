@@ -34,6 +34,9 @@ class Navigator extends React.Component {
             displayAnalysis: false,
             analysisStatusMessage: "Generating analysis...",
             displayAnalysisStatusMessage: false,
+            displayModel: false,
+            modelStatusMessage: "Generating CORAS Threat Model...",
+            displayModelStatusMessage: false,
             loading: false
         };
         
@@ -130,31 +133,30 @@ class Navigator extends React.Component {
         this.setState({
             displayAnalysisStatusMessage: true,
             analysisStatusMessage: "Generating analysis...",
-            loading: true
+            loading: true,
+            displayAnalysis: false,
+            displayModel: false
         });
 
-        fetch("http://" + CORAS_NAVIGATOR_IP + ":" + CORAS_NAVIGATOR_PORT + "/coras_navigator_api/perform_analysis", {
+        fetch("http://" + CORAS_NAVIGATOR_IP + ":" + CORAS_NAVIGATOR_PORT + "/coras_navigator_api/generate_risks", {
             headers: { 'Content-Type': 'application/json' },
             method: 'POST',
             body: JSON.stringify({})
         }).then((response) => {
-            if (response.ok) {
-                response.json().then((response_json) => {
-                    this.editorRef.current.changeGraph('threat');
-                    this.setState({
-                        loading: false,
-                        analysis: response_json['analysis'], 
-                        inputsDisabled: false,
-                        displayAnalysis: true,
-                        displayAnalysisStatusMessage: false
-                    });
-                    console.log("Received JSON:", response_json['coras']); 
-                    this.editorRef.current.changeGraphFromDAG(response_json['coras']);
-                    // this.editorRef.current.loadGraphFromJSON(JSON.parse(TEST_CORAS_DIAGRAM));
-                });
-            } else {
+            if (!response.ok) {
                 throw Error("Something went wrong");
             }
+            
+            response.json().then((response_json) => {
+                this.setState({
+                    loading: false,
+                    analysis: response_json['analysis'], 
+                    inputsDisabled: false,
+                    displayAnalysis: true,
+                    displayAnalysisStatusMessage: false
+                });
+                this.fetchThreatModel();
+            });
         }).catch((error) => {
             console.log(error);
             this.setState({
@@ -162,6 +164,46 @@ class Navigator extends React.Component {
                 inputsDisabled: false,
                 analysisStatusMessage: "Something went wrong.",
                 displayAnalysisStatusMessage: true
+            });
+        });
+    }
+
+    fetchThreatModel() {
+        this.setState({
+            displayModelStatusMessage: true,
+            modelStatusMessage: "Generating CORAS Threat Model...",
+            loading: true,
+            inputsDisabled: true,
+            displayModel: false
+        });
+
+        fetch("http://" + CORAS_NAVIGATOR_IP + ":" + CORAS_NAVIGATOR_PORT + "/coras_navigator_api/generate_coras_model", {
+            headers: { 'Content-Type': 'application/json' },
+            method: 'POST',
+            body: JSON.stringify({})
+        }).then((response) => {
+            if (!response.ok) {
+                throw Error("Something went wrong.");
+            }
+
+            response.json().then((response_json) => {
+                this.editorRef.current.changeGraph('threat');
+                this.setState({
+                    loading: false,
+                    inputsDisabled: false,
+                    displayModel: true,
+                    displayModelStatusMessage: false,
+                });
+                console.log("Received JSON:", response_json['coras_model']); 
+                this.editorRef.current.changeGraphFromDAG(response_json['coras_model']);
+            });
+        }).catch((error) => {
+            console.log(error);
+            this.setState({
+                loading: false,
+                inputsDisabled: false,
+                modelStatusMessage: "Something went wrong.",
+                displayModelStatusMessage: true
             });
         });
     }
@@ -274,7 +316,8 @@ class Navigator extends React.Component {
                 <p>Risk assessment:</p> 
                 <pre className="generated-text">{this.state.analysis}</pre>
             </> : null}
-            <div className={this.state.displayAnalysis ? "coras-model-container" : "coras-model-container hidden"}>
+            {this.statusMessage(this.state.displayModelStatusMessage, this.state.modelStatusMessage)}
+            <div className={this.state.displayModel ? "coras-model-container" : "coras-model-container hidden"}>
                 <Editor ref={this.editorRef}/>
             </div>
         </div>);

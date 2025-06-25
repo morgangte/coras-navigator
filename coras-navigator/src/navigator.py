@@ -20,7 +20,8 @@ class CorasNavigator:
         self.formatter = formatter
     
         self.summary = ""
-
+        self.risks = ""
+    
     def summarize(self, description: str) -> str:
         self.summary = self.summarizer.summarize(description)
         return self.summary
@@ -57,7 +58,11 @@ class CorasNavigator:
         return context
 
     def assess_risks(self, description: str, context: str) -> str:
-        return self.assessor.assess(description, context)
+        self.risks = self.assessor.assess(description, context)
+        return self.risks        
+
+    def get_risks(self):
+        return self.risks
 
     def format(self, text: str) -> str:
         return self.formatter.format(text)

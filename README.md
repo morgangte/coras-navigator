@@ -2,17 +2,7 @@
 
 This is the CORAS Navigator. An LLM-Based Assistant for Cybersecurity Risk Assessment.
 
-## Quick Start
-
-### Virtual environment
-
-Set up a Conda virtual environment:
-
-```
-$ conda create -n <env-name>
-```
-
-### Usage
+## From SINTEF
 
 Connect to the SINTEF server with port forwarding:
 - Port 1234: UI React App
@@ -22,21 +12,31 @@ Connect to the SINTEF server with port forwarding:
 $ ssh -L 1234:localhost:1234 -L 5050:localhost:5050 <username>@mainframe.sintef.no
 ```
 
-Then,
+## Quick Start
+
+Make sure to check `INSTALL.md` to download needed dependencies and create your Conda virtual environment (`<env-name>`).
+
+### In a first terminal
 
 ```
-$ cd <project-directory>
 $ conda activate <env-name>
+
+# On the first time, you would need to download necessary documents for RAG
 (<env-name>) $ make download-rag-documents
-(<env-name>) $ make ui
+
 (<env-name>) $ make navigator
+```
+
+### In a second terminal
+
+```
+$ conda activate <env-name>
+(<env-name>) $ make ui
 ```
 
 You will now be able to access the CORAS Navigator at `http://localhost:1234/`.
 
-### After use
-
-Deactivate the virtual environment with:
+If you want to exit, you can deactivate the virtual environment with:
 
 ```
 (<env-name>) $ conda deactivate 
@@ -44,7 +44,7 @@ Deactivate the virtual environment with:
 
 ## Help
 
-You can list available actions with:
+You can list available actions from the root of the project directory with:
 
 ```
 $ make
@@ -52,49 +52,14 @@ $ make
 
 ## Tests
 
-Once the virtual environment activated, run unit tests from the root of the project directory with:
+Run unit tests from the root of the project directory with:
 
 ```
-$ make test
+$ conda activate <env-name>
+(<env-name>) $ make test
 ```
 
 ## Dependencies
 
-### CORAS Navigator (back-end)
-
-- Ollama Python, the Python client for Ollama:
-
-```
-$ conda install --name <env-name> conda-forge::ollama-python
-```
-
-- Langchain, Langchain-community, FAISS and langchain-ollama for RAG:
-
-```
-$ conda install --name <env-name> langchain langchain-community faiss
-```
-
-Since langchain-ollama is not available on Conda, use pip instead:
-
-```
-$ conda activate <env-name>
-(<env-name>) $ pip install -U langchain-ollama
-(<env-name>) $ conda deactivate
-```
-
-- PyPDF for handling pdf files:
-
-```
-$ conda install --name <env-name> conda-forge::pypdf
-```
-
-- To make the CORAS Navigator accessible from the User Interface, we use Flask and Flask CORS:
-
-```
-$ conda install --name <env-name> anaconda::flask anaconda::flask-cors
-```
-
-### User Interace (front-end)
-
-See `ui/README.md`.
+See `INSTALL.md`.
 
