@@ -13,7 +13,7 @@ UPLOADS_DIR = "uploaded-files"
 summarizer = SimpleSummarizer("llama3:70b-instruct")
 assessor = SimpleRiskAssessor("llama3:70b-instruct")
 rag = CapecRAG(
-    embedding_model="llama3.2:3b", 
+    embedding_model="nomic-embed-text:latest", 
     directory="./vector-stores/main/", 
     complete_capec=(
         "./rag-docs/capec-detailed.json",
@@ -107,11 +107,11 @@ def generate_coras_model():
     }
 
 if __name__ == '__main__': 
-    documents_count = rag.load_documents([(
+    rag.load_files([(
         "./rag-docs/capec-abstract.txt",
         DocumentExtension.TXT
     )])
-    print(f"The vector store now contains {documents_count} entries.")    
+   
+    app.run(debug=True, port=5242)
     
-    app.run(debug=True, port=5050)
-
+   

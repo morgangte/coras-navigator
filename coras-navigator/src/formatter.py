@@ -36,7 +36,7 @@ The rules you must follow to generate the JSON file are:
 - Every edges must have a source and a target
 - A threat can initiate a threat scenario
 - A threat scenario can lead to an other threat scenario or an unwanted incident
-- An unwanted incident can impact one or multiple assets."""
+- Every unwanted incident must impact at least one asset."""
     json_schema = {
 "type": "object",
   "properties": {

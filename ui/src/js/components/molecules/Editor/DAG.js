@@ -84,6 +84,10 @@ function createElementFromDAG(type, id, label, posX, posY) {
 }
 
 function existingNode(node, existingNodes) {
+    if (node == null) {
+        return null;
+    }
+
     for (const existing of existingNodes) {
         if (existing.type !== node.type) {
             continue;
