@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import "./fileupload.css";
 
-function FileUpload({ onFileSelect, disabled }) {
+function FileUpload({ title, onFileSelect, disabled }) {
     const fileInputRef = useRef(null);
 
     const handleButtonClick = () => {
@@ -21,8 +21,8 @@ function FileUpload({ onFileSelect, disabled }) {
 
     return (
         <div>
-            <input type="file" accept=".pdf" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileChange}/>
-            <button className={disabled ? "load-button disabled" : "load-button"} onClick={handleButtonClick}>Upload a file</button>
+            <input type="file" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileChange}/>
+            <button className={disabled ? "load-button disabled" : "load-button"} onClick={handleButtonClick}>{title}</button>
         </div>
     );
 }

@@ -79,6 +79,12 @@ textarea {
 
 /*********************** Loaded files list ********************/
 
+.file-uploads {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
 .files-list {
     display: flex;
     flex-direction: row;

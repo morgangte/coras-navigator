@@ -309,3 +309,72 @@ function generateUUID() {
         return v.toString(16);
     });
 }
+
+// CORAS JSON -> Natural Language CORAS Semantics
+
+export function naturalLanguageFromThreatModel(content) {
+    let links = [];
+    let elements = {};
+    let text = "";
+    let element_text = "";
+
+    for (const cell of content.cells) {
+        if (cell.type === "coras.defaultLink") {
+            links.push(cell);
+        }
+
+        if (cell.role === "direct_asset") {
+            element_text = (cell.attrs.text.text).replaceAll('\n', ' ');
+            text += "'" + element_text + "' is an asset.\n";
+        } else if (cell.role === "unwanted_incident") {
+            element_text = (cell.attrs.text.text).replaceAll('\n', ' ');
+            text += "'" + element_text + "' is an unwanted incident.\n";
+        } else if (cell.role === "threat_scenario") {
+            element_text = (cell.attrs.text.text).replaceAll('\n', ' ');
+            text += "'" + element_text + "' is a threat scenario.\n";
+        } else if (cell.role === "threat_source") {
+            element_text = (cell.attrs.text.text).replaceAll('\n', ' ');
+            text += threatInNaturalLanguage(cell, element_text);
+        } else {
+            console.log("Unknown cell role: " + cell.role);
+            continue;
+        }
+        elements[cell.id] = {
+            role: cell.role,
+            text: element_text
+        };
+    }
+
+    for (const link of links) {
+        if (!elements.hasOwnProperty(link.source.id) || !elements.hasOwnProperty(link.target.id)) {
+            console.log("Link with unknown element id");
+            continue;
+        }
+
+        const source = elements[link.source.id];
+        const target = elements[link.target.id];
+        if (source.role == "threat_source") {
+            text += "'" + source.text + "' initiates '" + target.text + "'.\n";
+        } else if (source.role == "threat_scenario") {
+            text += "'" + source.text + "' leads to '" + target.text + "'.\n";
+        } else if (target.role == "direct_asset") {
+            text += "'" + source.text + "' impacts '" + target.text + "'.\n";
+        } else {
+            console.log("Unknown link");
+            continue;
+        }
+    }
+
+    return text;
+}
+
+function threatInNaturalLanguage(cell, element_text) {
+    if (cell.attrs.icon.href.includes(".504-0.488%2C1.76-0.931c0%2C1.252%2C0%2C13.475%2C0%2C13.482c0%2C0.146%2C0.026%2C1.263%2C0.78%2C2.03c0.46%2C0.468%2C1.092%2C0.705")) {
+        return "'" + element_text + "' is a deliberate human threat.\n";
+    } else if (cell.attrs.icon.href.includes("%09%09%09%09%3Cpath%20d%3D%22M19.5%2C9.7v0.6c-0.2-0.2-0.4-0.4-0.7-0.6H19.5z%22%2F%3E%09%09%0")) {
+        return "'" + element_text + "' is an accidental human threat.\n";
+    } else {
+        return "'" + element_text + "' is a non-human threat.\n";
+    }
+}
+

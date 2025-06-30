@@ -5,8 +5,10 @@ import './navigator.css'
 import Editor from '../Editor/Editor';
 import FileUpload from './FileUpload';
 
+import { naturalLanguageFromThreatModel } from '../Editor/DAG.js';
+
 const CORAS_NAVIGATOR_IP = "localhost";
-const CORAS_NAVIGATOR_PORT = 5050;
+const CORAS_NAVIGATOR_PORT = 5242;
 
 const DEVELOPMENT_MODE = false;
 
@@ -16,6 +18,7 @@ class Navigator extends React.Component {
         this.editorRef = React.createRef();
 
         this.onFileSelect = this.onFileSelect.bind(this); 
+        this.onCorasModelSelect = this.onCorasModelSelect.bind(this);
         this.onContextDescriptionInputValueChange = this.onContextDescriptionInputValueChange.bind(this);
         this.onGenerateSummaryButtonClick = this.onGenerateSummaryButtonClick.bind(this);
         this.onSummaryAccurateYesButtonClick = this.onSummaryAccurateYesButtonClick.bind(this);
@@ -24,6 +27,8 @@ class Navigator extends React.Component {
 
         this.state = {
             files: [],
+            corasModelTranscription: "",
+            corasModelFilename: "",
             contextDescription: "",
             summary: "",
             analysis: "",
@@ -83,7 +88,30 @@ class Navigator extends React.Component {
                 inputsDisabled: false
             });
         });
+    }
 
+    onCorasModelSelect(file) {
+        if (this.state.inputsDisabled) return;
+        if (!file)                     return;
+        
+        
+        const reader = new FileReader();
+        reader.readAsText(file, "UTF-8");
+        reader.onload = (event) => {
+            const text = naturalLanguageFromThreatModel(JSON.parse(event.target.result));
+            console.log(text);
+            this.setState({ 
+                corasModelTranscription: text,
+                corasModelFilename: file.name
+            });
+        }
+        reader.onerror = (event) => {
+            console.log("Error while reading CORAS Threat Model file");
+            this.setState({
+                corasModelTranscription: "",
+                corasModelFilename: ""
+            });
+        }
     }
 
     onContextDescriptionInputValueChange(event) {
@@ -102,7 +130,7 @@ class Navigator extends React.Component {
             headers: { 'Content-Type': 'application/json' },
             method: 'POST',
             body: JSON.stringify({
-                'context-description': this.state.contextDescription
+                'context-description': this.state.contextDescription + "\n" + this.state.corasModelTranscription
             })
         }).then((response) => {
             if (response.ok) {
@@ -227,15 +255,31 @@ class Navigator extends React.Component {
 
     loadedFilesElementsToRender() {
         let fileElements = [];
-        for (let index in this.state.files) {
-            let filename = this.state.files[index];
+        let index = 0;
+        for (let filename of this.state.files) {
             fileElements.push(this.loadedFileElementToRender(filename, index));
+            index += 1;
         }
+        
+        if (this.state.corasModelFilename !== "") {
+            fileElements.push(this.loadedFileElementToRender(this.state.corasModelFilename, index+1));
+        }
+
         return (<div className='files-list'>{fileElements}</div>);
     }
 
     onFileElementRemoveButtonClick(event) {
         const filename = event.target.id.split("-FILENAME-").at(-1);
+        
+        // The file element corresponds to the uploaded CORAS Model
+        if (filename === this.state.corasModelFilename) {
+            this.setState({
+                corasModelFilename: "",
+                corasModelTranscription: ""
+            });
+            return;
+        }
+
         this.setState(prevState => ({ 
             files: prevState.files.filter(f => f !== filename)
         }));
@@ -292,7 +336,10 @@ class Navigator extends React.Component {
             </> : null}
             <div className="one-line">
                 <p>Please provide a context description of your system:</p>
-                <FileUpload onFileSelect={this.onFileSelect} disabled={this.state.inputsDisabled}/>
+                <div className="file-uploads">
+                    <FileUpload title="Upload a file" onFileSelect={this.onFileSelect} disabled={this.state.inputsDisabled}/>
+                    <FileUpload title="Upload a CORAS Threat Model" onFileSelect={this.onCorasModelSelect} disabled={this.state.inputsDisabled}/>
+                </div>
             </div>
             {this.loadedFilesElementsToRender()}
             <textarea placeholder="We are developing..." onChange={this.onContextDescriptionInputValueChange}></textarea>
