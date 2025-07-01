@@ -73,14 +73,16 @@ function createElementFromDAG(type, id, label, posX, posY) {
         shape.attr("linkHandler/magnet", svg.magnet);
     }
 
-    if (RESIZE_ELEMENTS.has(type)) {
-        shape.resize(svg.width + formatted.elementWidth, svg.height + formatted.elementHeight);
-    } else {
-        shape.resize(svg.width || 100, svg.height || 60);
-    }
-    
+    const width  = RESIZE_ELEMENTS.has(type) ? (svg.width  + formatted.elementWidth ) : (svg.width  || 100);
+    const height = RESIZE_ELEMENTS.has(type) ? (svg.height + formatted.elementHeight) : (svg.height ||  60);
+    shape.resize(width, height); 
     shape.position(posX, posY);
-    return shape;
+
+    return {
+        element: shape,
+        width:   width,
+        height:  height
+    };
 }
 
 function existingNode(node, existingNodes) {
@@ -214,16 +216,16 @@ export function createGraphFromDAG(content) {
                 console.log("Skipped undefined node");
                 return;
             }
-            nodePositions[node.id] = {x: posX, y: posY};
-            const element = createElementFromDAG(node.type, node.id, node.text, posX, posY);
-            console.log("element", element);
+            const result = createElementFromDAG(node.type, node.id, node.text, posX, posY);
+            nodePositions[node.id] = { x: posX, y: posY, width: result.width, height: result.height };
+            console.log("element", result.element);
             //new joint.shapes.basic.Rect({
             //    id: node.id,
             //    position: { x: posX, y: posY },
             //    size: { width: node.width || 100, height: node.height || 60 },
             //    attrs: { text: { text: node.label } }
             //});
-            graph.addCell(element);
+            graph.addCell(result.element);
         });
     });
 
@@ -239,8 +241,8 @@ export function createGraphFromDAG(content) {
         graph.addCell(link);
         
         for (let v of getVulnerabilitiesProperties(edge, nodePositions)) {
-            const element = createElementFromDAG("vulnerability", v.id, v.text, v.x, v.y);
-            graph.addCell(element);
+            const result = createElementFromDAG("vulnerability", v.id, v.text, v.x, v.y);
+            graph.addCell(result.element);
         }
     });
 
@@ -258,39 +260,39 @@ export function createGraphFromDAG(content) {
 
 function getVulnerabilitiesProperties(edge, nodePositions) {
     let vulnerabilities = [];
-    if (!edge.hasOwnProperty("vulnerabilities")) {
-        return vulnerabilities;    
-    }
-    if (edge.vulnerabilities.length == 0) {
-        return vulnerabilities;
-    }
-    
-    // minimum distance between a vulnerability and an element
-    const margin = 150;
-    const sourcePos = nodePositions[edge.source];
-    const targetPos = nodePositions[edge.target];
-    if (sourcePos == undefined || targetPos == undefined) {
+    if (!edge.hasOwnProperty("vulnerabilities")) return vulnerabilities;    
+    if (edge.vulnerabilities.length == 0)        return vulnerabilities;
+
+    const source = nodePositions[edge.source];
+    const target = nodePositions[edge.target];
+    if (source == undefined || target == undefined) {
         console.log("Error: undefined node position when displaying vulnerability");
         return vulnerabilities;
     }
 
-    // distance between the two elements
-    const distance = Math.abs(targetPos.x - sourcePos.x);
-    // distance between two vulnerabilities
-    const gap = Math.max(25, distance - 2*margin) / edge.vulnerabilities.length;
-    const a = (targetPos.y - sourcePos.y) / (targetPos.x - sourcePos.x);
-    const b = sourcePos.y - a*(sourcePos.x);
-    // x-middle point between the two elements
-    const center = sourcePos.x + Math.abs(targetPos.x - sourcePos.x)/2;
-   
-    let i = 0;
-    for (let vulnerability of edge.vulnerabilities) {
-        let spacing = (Math.floor(i/2) + 1) * gap * (i%2 == 0 ? 1 : -1);
-        let x = (edge.vulnerabilities.length == 1) ? center : center + spacing;
+    const x0 = source.x + source.width /2;
+    const y0 = source.y + source.height/2;
+    const x1 = target.x + target.width /2;
+    const y1 = target.y + target.height/2;
 
+    const a = (y1 - y0) / (x1 - x0);
+    const b = y0 - a*x0;
+    
+    // distance between the two elements
+    const distance = Math.sqrt((y1-y0)**2 + (x1-x0)**2);
+    // distance between a vulnerability and an element
+    const margin = 20;
+
+    const gap  = (distance - 2*margin) / (1 + edge.vulnerabilities.length);
+    const xGap = Math.cos(a) * gap;
+ 
+    let i = 1;
+    for (let vulnerability of edge.vulnerabilities) {
+        let x = x0 + i*xGap;
+    
         vulnerabilities.push({
-            x: x + 16,
-            y: a*x + b + 21,
+            x: x - 16,
+            y: a*x + b - 30,
             text: vulnerability,
             id: `vulnerability-${generateUUID()}` 
         });

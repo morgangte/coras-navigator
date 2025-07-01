@@ -8,7 +8,7 @@ import FileUpload from './FileUpload';
 import { naturalLanguageFromThreatModel } from '../Editor/DAG.js';
 
 const CORAS_NAVIGATOR_IP = "localhost";
-const CORAS_NAVIGATOR_PORT = 5242;
+const CORAS_NAVIGATOR_PORT = 5050;
 
 const DEVELOPMENT_MODE = false;
 
@@ -324,6 +324,7 @@ class Navigator extends React.Component {
         this.editorRef.current.changeGraphFromDAG(JSON.parse(test_coras_model));
         this.setState({
             displayAnalysis: true,
+            displayModel: true
         });
     }
 
