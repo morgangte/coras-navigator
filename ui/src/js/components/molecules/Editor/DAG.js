@@ -2,7 +2,7 @@ import joint from 'jointjs';
 import ToolDefinitions from './ToolDefinitions';
 
 const THREAT_SOURCES_TYPES = new Set(['human_threat_non_malicious', 'human_threat_malicious', 'non_human_threat']);
-const RESIZE_ELEMENTS = new Set(['threat_scenario', 'unwanted_incident']);
+const RESIZE_ELEMENTS = new Set(['threat_scenario', 'unwanted_incident', 'treatment']);
 const ELEMENT_TEXT_LINE_THRESHOLD = 25;
 
 function formatElement(text) {
@@ -34,6 +34,8 @@ function createElementFromDAG(type, id, label, posX, posY) {
         type = "direct_asset";
     } else if (type == "non_human_threat") {
         type = "threat_non_human";
+    } else if (type == "mitigation") {
+        type = "treatment";
     } 
     
     // console.log("Looking for svg of " + type); 
@@ -127,11 +129,13 @@ function contentWithoutDuplicates(content) {
         if (!prunedNodes.has(edge.source)) {
             const originalNode = allNodes.get(edge.source);
             const newNode = existingNode(originalNode, prunedContent.vertices);
+            if (newNode == null) return null;
             edge.source = newNode.id;
         }
         if (!prunedNodes.has(edge.target)) {
             const originalNode = allNodes.get(edge.target);
             const newNode = existingNode(originalNode, prunedContent.vertices);
+            if (newNode == null) return null;
             edge.target = newNode.id;
         }
         prunedContent.edges.push(edge);
@@ -150,7 +154,10 @@ export function createGraphFromDAG(content) {
     const occupiedPositions = {};
 
     // Content with unique nodes (the LLM can generate multiple times the same element)
-    content = contentWithoutDuplicates(content);
+    const prunedContent = contentWithoutDuplicates(content);
+    if (prunedContent != null) {
+        content = prunedContent;
+    }
     console.log("Content with unique nodes: ", content);
 
     // Create a map for quick node lookup.
@@ -245,15 +252,6 @@ export function createGraphFromDAG(content) {
             graph.addCell(result.element);
         }
     });
-
-    /*
-    const v1 = createElementFromDAG("vulnerability", generateUUID(), "(0, 0)", 0, 0);
-    graph.addCell(v1);    
-    const v2 = createElementFromDAG("vulnerability", generateUUID(), "(0, 100)", 0, 100);
-    graph.addCell(v2);    
-    const v3 = createElementFromDAG("vulnerability", generateUUID(), "(100, 0)", 100, 0);
-    graph.addCell(v3);    
-    */ 
 
     return graph; 
 }

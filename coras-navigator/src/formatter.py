@@ -31,14 +31,15 @@ class SimpleJSONFormatter(Formatter):
     }}]
 }} 
 The rules you must follow to generate the JSON file are:
-- Vertices type can be "human_threat_non_malicious" (a human threat with no malicious intent), "human_threat_malicious" (a human threat with malicious intent), "non_human_threat" (a threat that is not a human), "threat_scenario", "unwanted_incident", or "asset"
+- Vertices type can be "human_threat_non_malicious" (a human threat with no malicious intent), "human_threat_malicious" (a human threat with malicious intent), "non_human_threat" (a threat that is not a human), "threat_scenario", "unwanted_incident", "asset" or "mitigation"
 - Every vertices must have a type, an id and a text
 - Every edges must have a source and a target
 - A threat can initiate a threat scenario
 - A threat scenario can lead to an other threat scenario or an unwanted incident
-- Every unwanted incident must impact at least one asset."""
-    json_schema = {
-"type": "object",
+- A vulnerability should be linked to one and only one edge
+- Every unwanted incident must impact at least one asset
+- Mitigations can treat a threat scenario"""
+    json_schema = {"type": "object",
   "properties": {
     "vertices": {
       "type": "array",
@@ -50,10 +51,11 @@ The rules you must follow to generate the JSON file are:
             "enum": [
               "threat_scenario",
               "unwanted_incident",
-              "asset",
               "human_threat_non_malicious",
               "human_threat_malicious",
-              "non_human_threat"
+              "non_human_threat",
+              "asset",
+              "mitigation"
             ],
             "type": "string",
             "description": "The type of vertice"
@@ -108,6 +110,7 @@ The rules you must follow to generate the JSON file are:
     "edges"
   ]
 }
+
     examples = [
         {"input": """**Risk 1: Insider Attack on Tester Computer**
 * **Threat:** Insider with access to tester computer
@@ -193,6 +196,7 @@ The rules you must follow to generate the JSON file are:
 }}"""
         }
     ]
+
     def format(self, text: str) -> str:
         print("Formatter::format() called")
         example_prompt = ChatPromptTemplate.from_messages([

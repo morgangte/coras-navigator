@@ -4,7 +4,7 @@
   "description": "A web application presenting the CORAS approach and language, to aid in learning the framework.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "PORT=1234 parcel src/index.html",
+    "start": "PORT=1235 parcel src/index.html",
     "build": "parcel build src/index.html --public-url ./",
     "deploy": "npm run build && firebase deploy"
   },
