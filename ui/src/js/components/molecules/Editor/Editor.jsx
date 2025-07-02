@@ -941,8 +941,11 @@ class Editor extends React.Component {
     
     changeGraphFromDAG(content) {
         const graph = createGraphFromDAG(content);
+        const result = graph.toJSON();
         // Set the new graph on the paper
-        this.graph.fromJSON(graph.toJSON());
+        this.graph.fromJSON(result);
+
+        return result;
     }
 
     render() {

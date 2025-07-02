@@ -31,6 +31,7 @@ class SimpleJSONFormatter(Formatter):
     }}]
 }} 
 The rules you must follow to generate the JSON file are:
+- Include each of the described risks in the JSON
 - Vertices type can be "human_threat_non_malicious" (a human threat with no malicious intent), "human_threat_malicious" (a human threat with malicious intent), "non_human_threat" (a threat that is not a human), "threat_scenario", "unwanted_incident", or "asset"
 - Every vertices must have a type, an id and a text
 - Every edges must have a source and a target
