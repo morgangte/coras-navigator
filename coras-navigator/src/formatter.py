@@ -17,7 +17,7 @@ class Formatter:
         raise Exception("Invalid class: format() not implemented")
 
 class SimpleJSONFormatter(Formatter):
-    system_prompt = """You are a helpul assistant that formats text input by the user into a structured JSON file following a pre-defined format. The JSON format you must follow is:
+    system_prompt = """You are a helpul assistant that formats multiple risks and scenarios into a single JSON file. Include in the JSON every risk that is provided. You must include the listed vulnerabilities into edges of the JSON. The JSON format you must follow is:
 {{ 
     "vertices": [{{ 
         "type": string,  
@@ -38,7 +38,7 @@ The rules you must follow to generate the JSON file are:
 - A threat scenario can lead to an other threat scenario or an unwanted incident
 - A vulnerability should be linked to one and only one edge
 - Every unwanted incident must impact at least one asset
-- Mitigations can treat a threat scenario"""
+- Mitigations can only treat 'threat scenarios'"""
     json_schema = {"type": "object",
   "properties": {
     "vertices": {
