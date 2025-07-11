@@ -222,3 +222,4 @@ The rules you must follow to generate the JSON file are:
         })
 
         return json.dumps(result_dict)
+

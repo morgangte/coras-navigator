@@ -40,6 +40,15 @@ textarea {
     cursor: pointer;
 }
 
+.display-context-button {
+    color: rgb(40, 40, 40);
+}
+
+.display-context-button:hover {
+    color: rgb(0, 139, 139);
+    cursor: pointer;
+}
+
 /*********************** Loading animation ********************/
 
 .navigator-status-message-container {
@@ -174,3 +183,4 @@ p.file-name {
     height: 0px;
     visibility: hidden;
 }
+

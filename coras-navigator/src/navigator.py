@@ -19,36 +19,9 @@ class CorasNavigator:
         self.assessor = assessor
         self.formatter = formatter
     
-        self.summary = ""
-        self.risks = ""
-    
     def summarize(self, description: str) -> str:
-        self.summary = self.summarizer.summarize(description)
-        return self.summary
+        return self.summarizer.summarize(description)
     
-    def summarize_files(self, directory: str) -> str:
-        files_summarizer = PDFSummarizer("llama3.2:3b")
-        
-        files = []
-        for filename in os.listdir(directory):  
-            if not os.path.isfile(os.path.join(directory, filename)):
-                continue
-            if '.' not in filename:
-                continue
-            if filename.rsplit('.', 1)[-1].lower() != "pdf":
-                continue
-            
-            files.append((
-                os.path.join(directory, filename),
-                DocumentExtension.PDF
-            ))
-        print(files)
-        self.summary = files_summarizer.summarize_files(files)
-        return self.summary
-
-    def get_summary(self):
-        return self.summary
-
     def retrieve(self, text: str) -> str:
         context = ""
         results = self.rag.search(text)
@@ -58,11 +31,7 @@ class CorasNavigator:
         return context
 
     def assess_risks(self, description: str, context: str) -> str:
-        self.risks = self.assessor.assess(description, context)
-        return self.risks        
-
-    def get_risks(self):
-        return self.risks
+        return self.assessor.assess(description, context)
 
     def format(self, text: str) -> str:
         return self.formatter.format(text)
@@ -77,20 +46,6 @@ class CorasNavigator:
         except Exception as exception:
             # Invalid JSON
             return ""
-
-class CorasNavigatorUI(CorasNavigator):
-    def perform_analysis(self, text: str) -> (str, str):
-        if text == "":
-            return None
-        
-        # print(f"Retrieve context for text: {text}")
-        context = self.retrieve(text)
-        print(f"Retrieved context: {context}")
-        print("Risk assessment...")
-        analysis = self.assess_risks(text, context)
-        print("Formatting...")
-        formatted = self.format(analysis)
-        return (analysis, self.extract_json(formatted))        
 
 def extract_JSON(text: str):
     try:

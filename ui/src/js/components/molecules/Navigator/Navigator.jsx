@@ -17,77 +17,38 @@ class Navigator extends React.Component {
         super(props);
         this.editorRef = React.createRef();
 
-        this.onFileSelect = this.onFileSelect.bind(this); 
         this.onCorasModelSelect = this.onCorasModelSelect.bind(this);
         this.onContextDescriptionInputValueChange = this.onContextDescriptionInputValueChange.bind(this);
         this.onGenerateSummaryButtonClick = this.onGenerateSummaryButtonClick.bind(this);
         this.onSummaryAccurateYesButtonClick = this.onSummaryAccurateYesButtonClick.bind(this);
         this.onSummaryAccurateNoButtonClick = this.onSummaryAccurateNoButtonClick.bind(this);
         this.onFileElementRemoveButtonClick = this.onFileElementRemoveButtonClick.bind(this);
+        this.onDisplayContextButtonClick = this.onDisplayContextButtonClick.bind(this);
 
         this.state = {
+            // User input
             files: [],
             corasModelTranscription: "",
             corasModelFilename: "",
             contextDescription: "",
+            // Generated
             summary: "",
             analysis: "",
+            retrievedContext: "",
+            // Controls
             inputsDisabled: false,
             displaySummary: false,
             summaryStatusMessage: "Generating summary...",
             displaySummaryStatusMessage: false,
             displayAnalysis: false,
             analysisStatusMessage: "Generating analysis...",
+            displayContext: false,
             displayAnalysisStatusMessage: false,
             displayModel: false,
             modelStatusMessage: "Generating CORAS Threat Model...",
             displayModelStatusMessage: false,
             loading: false
         };
-        
-        // DEVELOPMENT MODE ONLY
-        this.displayDummyCorasModel = this.displayDummyCorasModel.bind(this);
-    }
-
-    onFileSelect(file) {
-        if (this.state.inputsDisabled) return;
-        if (!file) return;
-        
-        let extension = file.name.split(".").at(-1).toLowerCase();
-        console.log(extension);
-        if (extension != "pdf") {
-            alert("Only PDF files are supported");
-            return;
-        }
-
-        this.setState(prevState => ({ 
-            files: [...prevState.files, file.name],
-            inputsDisabled: true
-        }));
-
-        const form_data = new FormData();
-        form_data.append('file', file);
-        fetch("http://" + CORAS_NAVIGATOR_IP + ":" + CORAS_NAVIGATOR_PORT + "/coras_navigator_api/upload_file", {
-            method: 'POST',
-            body: form_data
-        }).then((response) => {
-            if (response.ok) {
-                console.log(response);
-                response.json().then((response_json) => {
-                    console.log(response_json);
-                });
-                this.setState({
-                    inputsDisabled: false
-                });
-            } else {
-                throw Error("Something went wrong while uploading file");
-            }
-        }).catch((error) => {
-            console.log(error);
-            this.setState({
-                inputsDisabled: false
-            });
-        });
     }
 
     onCorasModelSelect(file) {
@@ -140,8 +101,11 @@ class Navigator extends React.Component {
                         inputsDisabled: false,
                         displaySummary: true,
                         displaySummaryStatusMessage: false,
+                        displayAnalysis: false,
+                        displayAnalysisStatusMessage: false,
+                        displayModel: false,
                         loading: false
-                    });                
+                    });
                 });
             } else {
                 throw Error("Something went wrong");
@@ -169,7 +133,9 @@ class Navigator extends React.Component {
         fetch("http://" + CORAS_NAVIGATOR_IP + ":" + CORAS_NAVIGATOR_PORT + "/coras_navigator_api/generate_risks", {
             headers: { 'Content-Type': 'application/json' },
             method: 'POST',
-            body: JSON.stringify({})
+            body: JSON.stringify({
+                'summary': this.state.summary
+            })
         }).then((response) => {
             if (!response.ok) {
                 throw Error("Something went wrong");
@@ -179,11 +145,14 @@ class Navigator extends React.Component {
                 this.setState({
                     loading: false,
                     analysis: response_json['analysis'], 
+                    retrievedContext: response_json['retrieved-context'],
                     inputsDisabled: false,
                     displayAnalysis: true,
+                    displayContext: false,
                     displayAnalysisStatusMessage: false
                 });
                 this.fetchThreatModel();
+                console.log("Retrieved context from the description of target of analysis: \n" + this.state.retrievedContext);
             });
         }).catch((error) => {
             console.log(error);
@@ -208,7 +177,9 @@ class Navigator extends React.Component {
         fetch("http://" + CORAS_NAVIGATOR_IP + ":" + CORAS_NAVIGATOR_PORT + "/coras_navigator_api/generate_coras_model", {
             headers: { 'Content-Type': 'application/json' },
             method: 'POST',
-            body: JSON.stringify({})
+            body: JSON.stringify({
+                'risk-analysis': this.state.analysis
+            })
         }).then((response) => {
             if (!response.ok) {
                 throw Error("Something went wrong.");
@@ -303,6 +274,12 @@ class Navigator extends React.Component {
         });
     }
 
+    onDisplayContextButtonClick() {
+        this.setState({
+            displayContext: !this.state.displayContext,
+        });
+    }
+
     statusMessage(condition, message) {
         if (condition) {
             return (
@@ -316,25 +293,8 @@ class Navigator extends React.Component {
         }
     }
 
-    // DEVELOPMENT MODE ONLY
-    displayDummyCorasModel() {
-        const test_coras_model = "{\"edges\": [ { \"source\": \"Untrusted Seller\", \"target\": \"Threat Scenario 1\", \"vulnerabilities\": [ \"Weak identity verification process\", \"Lack of secure storage for sensitive documents\" ] }, { \"source\": \"Threat Scenario 1\", \"target\": \"Unwanted Incident 1\", \"vulnerabilities\": [] }, { \"source\": \"Unwanted Incident 1\", \"target\": \"Seller Accounts\", \"vulnerabilities\": [] }, { \"source\": \"Unwanted Incident 1\", \"target\": \"Customer Data\", \"vulnerabilities\": [] }, { \"source\": \"External Attacker\", \"target\": \"Threat Scenario 2\", \"vulnerabilities\": [ \"Unpatched vulnerabilities in AWS services\", \"Inadequate network segmentation\" ] }, { \"source\": \"Threat Scenario 2\", \"target\": \"Unwanted Incident 2\", \"vulnerabilities\": [] }, { \"source\": \"Unwanted Incident 2\", \"target\": \"Customer Payment Information\", \"vulnerabilities\": [] }, { \"source\": \"Unwanted Incident 2\", \"target\": \"Personal Identifiable Information\", \"vulnerabilities\": [] } ], \"vertices\": [ { \"id\": \"Untrusted Seller\", \"text\": \"Untrusted seller with malicious intent\", \"type\": \"human_threat_non_malicious\" }, { \"id\": \"Threat Scenario 1\", \"text\": \"A seller creates an account on the platform using fake identification documents to conceal their true identity.\", \"type\": \"threat_scenario\" }, { \"id\": \"Unwanted Incident 1\", \"text\": \"The untrusted seller gains unauthorized access to their account, allowing them to manipulate sales data, steal customer information, or commit fraud.\", \"type\": \"unwanted_incident\" }, { \"id\": \"Seller Accounts\", \"text\": \"Seller accounts\", \"type\": \"asset\" }, { \"id\": \"Customer Data\", \"text\": \"customer data (e.g., payment information, PII)\", \"type\": \"asset\" }, { \"id\": \"External Attacker\", \"text\": \"External attacker exploiting vulnerabilities in AWS infrastructure\", \"type\": \"non_human_threat\" }, { \"id\": \"Threat Scenario 2\", \"text\": \"An external attacker discovers an unpatched vulnerability in one of the AWS services used by the e-commerce platform, allowing them to gain unauthorized access to user data.\", \"type\": \"threat_scenario\" }, { \"id\": \"Unwanted Incident 2\", \"text\": \"The attacker breaches the system, gaining access to customer payment information and PII, which can be used for malicious purposes (e.g., identity theft, financial fraud).\", \"type\": \"unwanted_incident\" }, { \"id\": \"Customer Payment Information\", \"text\": \"Customer payment information\", \"type\": \"asset\" }, { \"id\": \"Personal Identifiable Information\", \"text\": \"personal identifiable information (PII)\", \"type\": \"asset\" } ] }";
-        console.log("test model: ", JSON.parse(test_coras_model));
-        this.editorRef.current.changeGraph('threat');
-        this.editorRef.current.changeGraphFromDAG(JSON.parse(test_coras_model));
-        this.setState({
-            displayAnalysis: true,
-            displayModel: true
-        });
-    }
-
     render() {
         return (<div id="coras-navigator">
-            {DEVELOPMENT_MODE ? <>
-                <div>
-                    <button onClick={this.displayDummyCorasModel}>Test CORAS Model</button>
-                </div>
-            </> : null}
             <div className="one-line">
                 <p>Please provide a context description of your system:</p>
                 <div className="file-uploads">
@@ -363,6 +323,10 @@ class Navigator extends React.Component {
             {this.state.displayAnalysis ? <>
                 <p>Risk assessment:</p> 
                 <pre className="generated-text">{this.state.analysis}</pre>
+                <div className="action-buttons">
+                    <button onClick={this.onDisplayContextButtonClick}>{this.state.displayContext ? "- Hide retrieved context" : "+ Show retrieved context"}</button>
+                </div>
+                <pre className="generated-text">{this.state.displayContext ? this.state.retrievedContext : ""}</pre>
             </> : null}
             {this.statusMessage(this.state.displayModelStatusMessage, this.state.modelStatusMessage)}
             <div className={this.state.displayModel ? "coras-model-container" : "coras-model-container hidden"}>

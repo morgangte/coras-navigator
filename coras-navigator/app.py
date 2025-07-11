@@ -8,8 +8,6 @@ from navigator import *
 app = Flask(__name__)
 CORS(app)
 
-UPLOADS_DIR = "uploaded-files"
-
 summarizer = SimpleSummarizer("llama3:70b-instruct")
 assessor = SimpleRiskAssessor("llama3:70b-instruct")
 rag = CapecRAG(
@@ -24,49 +22,8 @@ formatter = SimpleJSONFormatter("llama3:70b-instruct")
 
 navigator = CorasNavigator(summarizer, rag, assessor, formatter)
 
-@app.route('/coras_navigator_api/upload_file', methods=["POST"])
-def upload_file():
-    if not os.path.exists(UPLOADS_DIR):
-        os.makedirs(UPLOADS_DIR)
-
-    if 'file' not in request.files:
-        return {
-            'error': 'No file'
-        }, 400
-
-    file = request.files['file']
-    if file.filename == '':
-        return {
-            'error': 'No file selected'
-        }, 400
-    
-    if file:
-        filepath = os.path.join(UPLOADS_DIR, file.filename)
-        file.save(filepath)
-        return {
-            'message': 'File uploaded successfully'
-        }, 200
-
-@app.route('/coras_navigator_api/remove_file', methods=["POST"])
-def remove_file():
-    json_data = request.get_json()
-    filename = json_data['filename-to-remove']
-    filepath = os.path.join(UPLOADS_DIR, filename)
-    if not os.path.exists(filepath):
-        return {
-            'error': 'No such file'
-        }, 400
-    
-    os.remove(filepath)
-    return {
-        'message': 'File removed successfully'
-    }, 200
-
 @app.route('/coras_navigator_api/generate_summary', methods=["POST"])
 def generate_summary():
-    # summary = navigator.summarize_files(UPLOADS_DIR)
-    # print(f"Generated summary: {summary}")
-
     json_data = request.get_json()
     print(f"Received JSON: {json_data}")
 
@@ -81,16 +38,17 @@ def generate_risks():
     print(f"Received JSON: {json_data}")
 
     print("Retrieve context...")
-    context = navigator.retrieve(navigator.get_summary())
+    context = navigator.retrieve(json_data['summary'])
     print(f"Retrieved context: \n{context}")
 
     print("Identifying risks...")
-    analysis = navigator.assess_risks(navigator.get_summary(), context)
+    analysis = navigator.assess_risks(json_data['summary'], context)
 
     # analysis, coras_json = navigator.perform_analysis(navigator.get_summary())
     
     return {
         'analysis': analysis,
+        'retrieved-context': context,
     }
 
 @app.route('/coras_navigator_api/generate_coras_model', methods=["POST"])
@@ -99,7 +57,7 @@ def generate_coras_model():
     print(f"Received JSON: {json_data}")
 
     print("Formatting...")
-    model = navigator.extract_json(navigator.format(navigator.get_risks()))
+    model = navigator.extract_json(navigator.format(json_data['risk-analysis']))
     print(f"Generated CORAS Model: \n{model}")
     
     return {
@@ -114,4 +72,3 @@ if __name__ == '__main__':
    
     app.run(debug=True, port=5242)
     
-   
