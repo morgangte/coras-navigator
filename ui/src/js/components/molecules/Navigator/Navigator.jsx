@@ -24,37 +24,51 @@ class Navigator extends React.Component {
         this.onSummaryAccurateNoButtonClick = this.onSummaryAccurateNoButtonClick.bind(this);
         this.onFileElementRemoveButtonClick = this.onFileElementRemoveButtonClick.bind(this);
         this.onDisplayContextButtonClick = this.onDisplayContextButtonClick.bind(this);
+        this.onIncludeGeneratedModelCheckboxChange = this.onIncludeGeneratedModelCheckboxChange.bind(this);
 
         this.state = {
             // User input
             files: [],
+            checked: true,
+            loading: false,
+        
+            // Uploaded CORAS Threat Model by user
             corasModelTranscription: "",
             corasModelFilename: "",
+        
             contextDescription: "",
+
             // Generated
             summary: "",
             analysis: "",
             retrievedContext: "",
             // Controls
             inputsDisabled: false,
+
+        
+      
+            includeGeneratedModelInSummary: false,
+
             displaySummary: false,
-            summaryStatusMessage: "Generating summary...",
             displaySummaryStatusMessage: false,
+            summaryStatusMessage: "Generating summary...",
+            analysis: "",
             displayAnalysis: false,
-            analysisStatusMessage: "Generating analysis...",
+          
             displayContext: false,
+
             displayAnalysisStatusMessage: false,
+            analysisStatusMessage: "Generating analysis...",
+            generatedModel: null,
             displayModel: false,
-            modelStatusMessage: "Generating CORAS Threat Model...",
             displayModelStatusMessage: false,
-            loading: false
+            modelStatusMessage: "Generating CORAS Threat Model...",
         };
     }
 
     onCorasModelSelect(file) {
-        if (this.state.inputsDisabled) return;
-        if (!file)                     return;
-        
+        if (this.state.loading) return;
+        if (!file)              return;
         
         const reader = new FileReader();
         reader.readAsText(file, "UTF-8");
@@ -63,7 +77,8 @@ class Navigator extends React.Component {
             console.log(text);
             this.setState({ 
                 corasModelTranscription: text,
-                corasModelFilename: file.name
+                corasModelFilename: file.name,
+                checked: false
             });
         }
         reader.onerror = (event) => {
@@ -76,29 +91,40 @@ class Navigator extends React.Component {
     }
 
     onContextDescriptionInputValueChange(event) {
-        this.setState({contextDescription: event.target.value});
+        this.setState({ contextDescription: event.target.value });
     }
 
     onGenerateSummaryButtonClick() {
         this.setState({
-            inputsDisabled: true,
             summaryStatusMessage: "Generating a structured description of the system...",
             displaySummaryStatusMessage: true,
             loading: true
         });
 
+        let modelTranscription = this.state.corasModelTranscription;
+
+        if (this.state.checked && this.state.generatedModel != null) {
+            this.setState({
+                files: [],
+            });
+            modelTranscription = naturalLanguageFromThreatModel(this.state.generatedModel);
+        }
+
+        let contextDescription = this.state.contextDescription;
+        if (modelTranscription !== "") {
+            contextDescription += "\nExisting threat model:\n" + modelTranscription;
+        }
         fetch("http://" + CORAS_NAVIGATOR_IP + ":" + CORAS_NAVIGATOR_PORT + "/coras_navigator_api/generate_summary", {
             headers: { 'Content-Type': 'application/json' },
             method: 'POST',
             body: JSON.stringify({
-                'context-description': this.state.contextDescription + "\n" + this.state.corasModelTranscription
+                'context-description': contextDescription
             })
         }).then((response) => {
             if (response.ok) {
                 response.json().then((response_json) => {
                     this.setState({
                         summary: response_json['summary'], 
-                        inputsDisabled: false,
                         displaySummary: true,
                         displaySummaryStatusMessage: false,
                         displayAnalysis: false,
@@ -113,7 +139,6 @@ class Navigator extends React.Component {
         }).catch((error) => {
             console.log(error);
             this.setState({
-                inputsDisabled: false,
                 summaryStatusMessage: "Something went wrong.",
                 displaySummaryStatusMessage: true,
                 loading: false
@@ -158,7 +183,6 @@ class Navigator extends React.Component {
             console.log(error);
             this.setState({
                 loading: false,
-                inputsDisabled: false,
                 analysisStatusMessage: "Something went wrong.",
                 displayAnalysisStatusMessage: true
             });
@@ -170,7 +194,6 @@ class Navigator extends React.Component {
             displayModelStatusMessage: true,
             modelStatusMessage: "Generating CORAS Threat Model...",
             loading: true,
-            inputsDisabled: true,
             displayModel: false
         });
 
@@ -187,20 +210,20 @@ class Navigator extends React.Component {
 
             response.json().then((response_json) => {
                 this.editorRef.current.changeGraph('threat');
+                console.log("Received JSON:", response_json['coras_model']); 
+                const generatedModel = this.editorRef.current.changeGraphFromDAG(response_json['coras_model']);
                 this.setState({
                     loading: false,
-                    inputsDisabled: false,
                     displayModel: true,
                     displayModelStatusMessage: false,
+                    generatedModel: generatedModel,
+                    checked: true
                 });
-                console.log("Received JSON:", response_json['coras_model']); 
-                this.editorRef.current.changeGraphFromDAG(response_json['coras_model']);
             });
         }).catch((error) => {
             console.log(error);
             this.setState({
                 loading: false,
-                inputsDisabled: false,
                 modelStatusMessage: "Something went wrong.",
                 displayModelStatusMessage: true
             });
@@ -212,7 +235,8 @@ class Navigator extends React.Component {
             loading: false,
             displayAnalysis: false,
             displayAnalysisStatusMessage: true,
-            analysisStatusMessage: "Please edit the context description of your system."    
+            analysisStatusMessage: "Please edit the context description of your system.",    
+            displayModel: false,
         });
     }
 
@@ -293,19 +317,32 @@ class Navigator extends React.Component {
         }
     }
 
+    onIncludeGeneratedModelCheckboxChange() {
+        const checked = this.state.checked;
+        this.setState({
+            checked: !checked,
+        });
+    }
+
     render() {
         return (<div id="coras-navigator">
             <div className="one-line">
                 <p>Please provide a context description of your system:</p>
                 <div className="file-uploads">
-                    <FileUpload title="Upload a file" onFileSelect={this.onFileSelect} disabled={this.state.inputsDisabled}/>
-                    <FileUpload title="Upload a CORAS Threat Model" onFileSelect={this.onCorasModelSelect} disabled={this.state.inputsDisabled}/>
+                    {this.state.generatedModel != null ? <label>
+                        <input type="checkbox" checked={this.state.checked} onChange={() => { 
+                            this.onIncludeGeneratedModelCheckboxChange(); 
+                        }}/>
+                        Include generated CORAS Threat Model
+                    </label> : null }    
+                    <FileUpload title="Upload a file" onFileSelect={this.onFileSelect} disabled={this.state.loading}/>
+                    <FileUpload title="Upload a CORAS Threat Model" onFileSelect={this.onCorasModelSelect} disabled={this.state.loading}/>
                 </div>
             </div>
             {this.loadedFilesElementsToRender()}
             <textarea placeholder="We are developing..." onChange={this.onContextDescriptionInputValueChange}></textarea>
             <div className="action-buttons">
-                <button onClick={this.onGenerateSummaryButtonClick} disabled={this.state.inputsDisabled}>
+                <button onClick={this.onGenerateSummaryButtonClick} disabled={this.state.loading}>
                     Send
                 </button>
             </div>

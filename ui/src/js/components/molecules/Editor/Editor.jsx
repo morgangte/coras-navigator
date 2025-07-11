@@ -945,7 +945,7 @@ class Editor extends React.Component {
         this.loadGraphFromJSON(graphs.treatment.toJSON());        
         this.changeGraph('threat');
         this.loadGraphFromJSON(graphs.threat.toJSON());        
-  }
+    }
 
     render() {
         return (
