@@ -8,6 +8,16 @@ from assessor import *
 from formatter import *
 
 class CorasNavigator:
+    """
+    The CORAS navigator: a facade of the different agents.
+
+    Attributes:
+    - summarizer: The summarizer agent
+    - rag:        The RAG module
+    - assessor:   The risk assessor agent
+    - formatter:  The formatter agent
+    """
+
     summarizer: Summarizer
     rag: RAG
     assessor: RiskAssessor
@@ -23,6 +33,16 @@ class CorasNavigator:
         return self.summarizer.summarize(description)
     
     def retrieve(self, text: str) -> str:
+        """
+        Uses the RAG module to return context related to input text, as a unique string.
+
+        Parameters:
+        - text: The input text used for retreival
+
+        Returns:
+        - The retrieved context as a string
+        """
+        
         context = ""
         results = self.rag.search(text)
 

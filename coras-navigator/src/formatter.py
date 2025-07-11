@@ -5,6 +5,13 @@ from langchain_core.prompts import ChatPromptTemplate, FewShotChatMessagePromptT
 import json
 
 class Formatter:
+    """
+    Agent responsible of formatting the textual risk analysis into a specified format.
+
+    Attributes:
+    - llm: The LLM used for generation
+    """
+
     llm = None
 
     def __init__(self, model: str):
@@ -14,9 +21,28 @@ class Formatter:
         )
 
     def format(self, text: str) -> str:
-        raise Exception("Invalid class: format() not implemented")
+        """
+        Formats text into the desired format.
+
+        Parameters:
+        - text: The text to format
+
+        Returns:
+        - The JSON object as a string
+        """
+
+        raise Exception("Invalid class: Formatter::format() not implemented")
 
 class SimpleJSONFormatter(Formatter):
+    """
+    A formatter with the JSON schema used as a simplified representation of CORAS models.
+
+    Attributes:
+    - system_prompt: Instructions for the LLM to strictly follow the desired format
+    - json_schema: The JSON schema which the LLM is restricted to
+    - examples: Examples of desired output used for few-shot prompting
+    """
+
     system_prompt = """You are a helpul assistant that formats multiple risks and scenarios into a single JSON file. Include in the JSON every risk that is provided. You must include the listed vulnerabilities into edges of the JSON. The JSON format you must follow is:
 {{ 
     "vertices": [{{ 
@@ -198,7 +224,7 @@ The rules you must follow to generate the JSON file are:
     ]
 
     def format(self, text: str) -> str:
-        print("Formatter::format() called")
+        # Few shot prompting
         example_prompt = ChatPromptTemplate.from_messages([
             ("human", "{input}"),
             ("ai", "{output}")
@@ -208,6 +234,7 @@ The rules you must follow to generate the JSON file are:
             examples=self.examples
         )
     
+        # Actual prompt
         prompt = ChatPromptTemplate.from_messages([
             ("system", self.system_prompt),
             few_shot_prompt,
@@ -221,5 +248,6 @@ The rules you must follow to generate the JSON file are:
             "input": text
         })
 
+        # Return the JSON as a string
         return json.dumps(result_dict)
 

@@ -26,6 +26,15 @@ class DocumentExtension:
     JSON = "JSON"
 
 class RAG:
+    """
+    A RAG module.
+
+    Attributes:
+    - VECTOR_STORE_DOCUMENTS_RECORD: The file containing the list of files used to populate the vector store
+    - VECTOR_STORE_FOLDER:           The folder where the vector store is saved
+    - vector_store:                  The vector store
+    """
+
     VECTOR_STORE_DOCUMENTS_RECORD = "vector-store-documents.json"
     VECTOR_STORE_FOLDER = "faiss-vector-store/"
 
@@ -33,21 +42,46 @@ class RAG:
         raise Exception("Invalid class: __init__() not implemented")
 
     def search(self, query: str, k: int=3) -> list[str]:
+        """
+        Search and retrieves context from the vector store based on user query.
+
+        Parameters:
+        - query: The user query used for retrieval
+        - k:     The number of records to retrieve
+
+        Returns:
+        - List of retrieved records from the vector store
+        """
+
         raise Exception("Invalid class: search() not implemented")
     
     def load_files(self, files: list[(str, DocumentExtension)]) -> None:
+        """
+        Loads files to be used as sources for retrieval. If the saved vector store contained the same files, it is simply loaded from local storage. Otherwise, the vector store is created.
+
+        Parameters:
+        - files: List of files to load
+        """
+
         filepaths = [path for (path, _) in files]
         
         if is_list_equal_to_json_file_content(filepaths, f"{self.directory}{self.VECTOR_STORE_DOCUMENTS_RECORD}"):
-            self.load_vector_store()
+            self.__load_vector_store()
         else:
-            self.create_vector_store(files)
-            self.save_vector_store(filepaths)        
+            self.__create_vector_store(files)
+            self.__save_vector_store(filepaths)        
 
-    def create_vector_store(self, files: list[(str, DocumentExtension)]) -> None:
+    def __create_vector_store(self, files: list[(str, DocumentExtension)]) -> None:
+        """
+        Creates a vector store from files.
+
+        Parameters:
+        - files: List of files to use
+        """
+
         documents = []
         for path, extension in files:
-            documents.extend(self.get_documents_from_file(path, extension))
+            documents.extend(self.__get_documents_from_file(path, extension))
 
         self.vector_store = FAISS.from_documents(
             documents,
@@ -55,7 +89,15 @@ class RAG:
         )
         print(f"Successfully created the Vector Store with {len(documents)} documents")
 
-    def get_documents_from_file(self, path: str, extension: DocumentExtension) -> None:
+    def __get_documents_from_file(self, path: str, extension: DocumentExtension) -> None:
+        """
+        Splits a file into Documents. The file should be pre-processed to list Documents between ";\n".
+
+        Parameters:
+        - path:      The path of the file to split
+        - extension: The extension of the file
+        """
+
         if extension not in [DocumentExtension.TXT]:
             raise Exception("Document extension not supported")
         
@@ -68,15 +110,26 @@ class RAG:
         print(f"File '{path}' loaded ({len(documents)} documents).")
         return documents
  
-    def save_vector_store(self, documents_paths) -> None:
+    def __save_vector_store(self, filepaths: list[str]) -> None:
+        """
+        Saves the current vector store to local storage.
+
+        Parameters:
+        - filepaths: List of paths of the files used to populate the vector store
+        """
+
         self.vector_store.save_local(
             folder_path=f"{self.directory}{self.VECTOR_STORE_FOLDER}"
         )
         with open(f"{self.directory}{self.VECTOR_STORE_DOCUMENTS_RECORD}", "w") as file:
-            json.dump(documents_paths, file)
+            json.dump(filepaths, file)
         print(f"Saved Vector Store to {self.VECTOR_STORE_FOLDER}")   
 
-    def load_vector_store(self) -> None:
+    def __load_vector_store(self) -> None:
+        """
+        Loads a vector store from local storage.
+        """
+
         self.vector_store = FAISS.load_local(
             folder_path=f"{self.directory}{self.VECTOR_STORE_FOLDER}",
             embeddings=self.embeddings,
@@ -85,6 +138,10 @@ class RAG:
         print(f"Loaded Vector Store from '{self.directory}{self.VECTOR_STORE_FOLDER}' (same files)")   
 
 class CapecRAG(RAG):
+    """
+    RAG module with re-ranking
+    """
+
     def __init__(self, embedding_model: str, directory: str, complete_capec: (str, DocumentExtension)):
         self.embeddings = OllamaEmbeddings(model=embedding_model)
         self.directory = directory
@@ -94,15 +151,15 @@ class CapecRAG(RAG):
         if extension != DocumentExtension.JSON:
             raise Exception("Only JSON file are supported")
 
-        self.complete_capec = self.get_complete_capec(complete_capec_file)
+        self.complete_capec = self.__get_complete_capec(complete_capec_file)
  
-    def get_complete_capec(self, filename):
+    def __get_complete_capec(self, filename):
         capec_dict = {}
             
         with open(filename, "r") as json_file:
             capec_dict = json.load(json_file)
 
-        return capec_dict              
+        return capec_dict   
 
     def search(self, query, k=6):
         results = self.vector_store.similarity_search(query=query, k=k)

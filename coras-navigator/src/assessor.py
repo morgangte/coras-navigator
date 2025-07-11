@@ -3,6 +3,13 @@ from langchain_core.messages import AIMessage
 from langchain_core.prompts import ChatPromptTemplate
 
 class RiskAssessor:
+    """
+    Agent responsible of generating the textual risk analysis.
+
+    Attributes:
+    - llm: The LLM used for generation
+    """
+
     llm = None
 
     def __init__(self, model: str):
@@ -12,7 +19,18 @@ class RiskAssessor:
         )
 
     def assess(self, description: str, context: str) -> str:
-        raise Exception("Invalid class: assess() not implemented")
+        """
+        Performs the risk analysis.
+
+        Parameters:
+        - description: A description of the target of analysis
+        - context:     Some context (retrieved with RAG)
+        
+        Returns:
+        - The risk analysis
+        """
+
+        raise Exception("Invalid class: RiskAssessor::assess() not implemented")
 
 class SimpleRiskAssessor(RiskAssessor):
     system_prompt = """

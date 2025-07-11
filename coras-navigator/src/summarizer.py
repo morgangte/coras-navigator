@@ -12,6 +12,13 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain.chains.summarize import load_summarize_chain
 
 class Summarizer:
+    """
+    Agent responsible for generating a structured and comprehensive description of the target of analysis from the unstructured user-provided description.
+
+    Attributes:
+    - llm: The LLM used for generation
+    """
+
     llm = None
     
     def __init__(self, model: str):
@@ -21,7 +28,17 @@ class Summarizer:
         )
 
     def summarize(self, text: str) -> str:
-        raise Exception("Invalid class: summarize() not implemented")
+        """
+        Structures the input text.
+
+        Parameters:
+        - text: The text to summarize/structure
+        
+        Returns:    
+        - A structured and comprehensive description of the input text
+        """
+
+        raise Exception("Invalid class: Summarizer::summarize() not implemented")
 
 class SimpleSummarizer(Summarizer):
     system_prompt = """

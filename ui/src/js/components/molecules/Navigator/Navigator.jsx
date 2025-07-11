@@ -170,7 +170,7 @@ class Navigator extends React.Component {
                     displayAnalysisStatusMessage: false
                 });
                 this.fetchThreatModel();
-                console.log("Retrieved context from the description of target of analysis: \n" + this.state.retrievedContext);
+                // console.log("Retrieved context from the description of target of analysis: \n" + this.state.retrievedContext);
             });
         }).catch((error) => {
             console.log(error);
