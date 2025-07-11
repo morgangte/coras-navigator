@@ -8,7 +8,7 @@ import FileUpload from './FileUpload';
 import { naturalLanguageFromThreatModel } from '../Editor/DAG.js';
 
 const CORAS_NAVIGATOR_IP = "localhost";
-const CORAS_NAVIGATOR_PORT = 5242;
+const CORAS_NAVIGATOR_PORT = 5050;
 
 const DEVELOPMENT_MODE = false;
 
@@ -29,37 +29,31 @@ class Navigator extends React.Component {
         this.state = {
             // User input
             files: [],
-            checked: true,
-            loading: false,
-        
-            // Uploaded CORAS Threat Model by user
-            corasModelTranscription: "",
             corasModelFilename: "",
-        
             contextDescription: "",
 
             // Generated
+            corasModelTranscription: "",
             summary: "",
             analysis: "",
             retrievedContext: "",
+            generatedModel: null,
+            
             // Controls
-            inputsDisabled: false,
-
-        
-      
+            checked: true,
+            loading: false,
             includeGeneratedModelInSummary: false,
 
             displaySummary: false,
             displaySummaryStatusMessage: false,
             summaryStatusMessage: "Generating summary...",
-            analysis: "",
+            
             displayAnalysis: false,
+            displayAnalysisStatusMessage: false,
+            analysisStatusMessage: "Generating analysis...",
           
             displayContext: false,
 
-            displayAnalysisStatusMessage: false,
-            analysisStatusMessage: "Generating analysis...",
-            generatedModel: null,
             displayModel: false,
             displayModelStatusMessage: false,
             modelStatusMessage: "Generating CORAS Threat Model...",
@@ -171,7 +165,6 @@ class Navigator extends React.Component {
                     loading: false,
                     analysis: response_json['analysis'], 
                     retrievedContext: response_json['retrieved-context'],
-                    inputsDisabled: false,
                     displayAnalysis: true,
                     displayContext: false,
                     displayAnalysisStatusMessage: false

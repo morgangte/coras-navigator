@@ -943,8 +943,11 @@ class Editor extends React.Component {
         const graphs = createGraphFromDAG(content);
         this.changeGraph('treatment');
         this.loadGraphFromJSON(graphs.treatment.toJSON());        
+    
+        const threat_model = graphs.threat.toJSON();
         this.changeGraph('threat');
-        this.loadGraphFromJSON(graphs.threat.toJSON());        
+        this.loadGraphFromJSON(threat_model);
+        return threat_model;        
     }
 
     render() {
