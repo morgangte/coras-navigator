@@ -940,12 +940,11 @@ class Editor extends React.Component {
     }
     
     changeGraphFromDAG(content) {
-        const graph = createGraphFromDAG(content);
-        const result = graph.toJSON();
-        // Set the new graph on the paper
-        this.graph.fromJSON(result);
-
-        return result;
+        const graphs = createGraphFromDAG(content);
+        this.changeGraph('treatment');
+        this.loadGraphFromJSON(graphs.treatment.toJSON());        
+        this.changeGraph('threat');
+        this.loadGraphFromJSON(graphs.threat.toJSON());        
     }
 
     render() {

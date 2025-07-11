@@ -2,38 +2,16 @@ import joint from 'jointjs';
 import ToolDefinitions from './ToolDefinitions';
 
 const THREAT_SOURCES_TYPES = new Set(['human_threat_non_malicious', 'human_threat_malicious', 'non_human_threat']);
-const RESIZE_ELEMENTS = new Set(['threat_scenario', 'unwanted_incident']);
+const RESIZE_ELEMENTS = new Set(['threat_scenario', 'unwanted_incident', 'treatment']);
 const ELEMENT_TEXT_LINE_THRESHOLD = 25;
-
-function formatElement(text) {
-    let length = 0;
-    let formattedText = "";
-    let lines = 1;
-    let maxLength = 0;
-
-    for (const word of text.split(" ")) {
-        formattedText += (length == 0 ? "" : " ") + word;
-        length += word.length;
-        if (length > ELEMENT_TEXT_LINE_THRESHOLD) {
-            formattedText += "\n";
-            lines += 1;
-            maxLength = (length > maxLength) ? length : maxLength;
-            length = 0;
-        }
-    }
-
-    return { 
-        text: formattedText, 
-        elementWidth: Math.floor(maxLength * 3.5), 
-        elementHeight: lines * 10 
-    };
-}
 
 function createElementFromDAG(type, id, label, posX, posY) {
     if (type == "asset" || type == "impacted_asset") {
         type = "direct_asset";
     } else if (type == "non_human_threat") {
         type = "threat_non_human";
+    } else if (type == "mitigation") {
+        type = "treatment";
     } 
     
     // console.log("Looking for svg of " + type); 
@@ -127,12 +105,42 @@ function contentWithoutDuplicates(content) {
         if (!prunedNodes.has(edge.source)) {
             const originalNode = allNodes.get(edge.source);
             const newNode = existingNode(originalNode, prunedContent.vertices);
+            if (newNode == null) return null;
             edge.source = newNode.id;
         }
         if (!prunedNodes.has(edge.target)) {
             const originalNode = allNodes.get(edge.target);
             const newNode = existingNode(originalNode, prunedContent.vertices);
+            if (newNode == null) return null;
             edge.target = newNode.id;
+        }
+        prunedContent.edges.push(edge);
+    }
+
+    return prunedContent;
+}
+
+function contentWithoutMitigation(content) {
+    let prunedContent = {
+        vertices: [],
+        edges: []
+    };
+
+    let mitigationIDs = [];
+
+    // Remove mitigation nodes
+    for (const node of content.vertices) {
+        if (node.type === "mitigation") {
+            mitigationIDs.push(node.id);
+            continue;
+        }
+        prunedContent.vertices.push(node);
+    }
+
+    // Remove links from/to mitigations
+    for (const edge of content.edges) {
+        if (mitigationIDs.includes(edge.source) || mitigationIDs.includes(edge.target)) {
+            continue;
         }
         prunedContent.edges.push(edge);
     }
@@ -150,10 +158,21 @@ export function createGraphFromDAG(content) {
     const occupiedPositions = {};
 
     // Content with unique nodes (the LLM can generate multiple times the same element)
-    content = contentWithoutDuplicates(content);
+    let prunedContent = contentWithoutDuplicates(content);
+    if (prunedContent != null) {
+        content = prunedContent;
+    }
+    const fullContent = content;
     console.log("Content with unique nodes: ", content);
 
-    // Create a map for quick node lookup.
+    // Remove mitigations
+    prunedContent = contentWithoutMitigation(content);
+    if (prunedContent != null) {
+        content = prunedContent;
+    }
+    console.log("Content without mitigation: ", content);    
+
+    // Create a map (node_id -> node) for quick node lookup.
     const nodeMap = {};
     content.vertices.forEach(node => {
         nodeMap[node.id] = node;
@@ -246,17 +265,17 @@ export function createGraphFromDAG(content) {
         }
     });
 
-    /*
-    const v1 = createElementFromDAG("vulnerability", generateUUID(), "(0, 0)", 0, 0);
-    graph.addCell(v1);    
-    const v2 = createElementFromDAG("vulnerability", generateUUID(), "(0, 100)", 0, 100);
-    graph.addCell(v2);    
-    const v3 = createElementFromDAG("vulnerability", generateUUID(), "(100, 0)", 100, 0);
-    graph.addCell(v3);    
-    */ 
+    let graphCopy = new joint.dia.Graph();
+    graphCopy.fromJSON(graph.toJSON());
+    const fullGraph = insertMitigations(graphCopy, nodePositions, fullContent);
 
-    return graph; 
+    return {
+        threat: graph,
+        treatment: fullGraph
+    }; 
 }
+
+/*************************** Vulnerabilities ***************************/
 
 function getVulnerabilitiesProperties(edge, nodePositions) {
     let vulnerabilities = [];
@@ -281,7 +300,7 @@ function getVulnerabilitiesProperties(edge, nodePositions) {
     // distance between the two elements
     const distance = Math.sqrt((y1-y0)**2 + (x1-x0)**2);
     // distance between a vulnerability and an element
-    const margin = 20;
+    const margin = 50;
 
     const gap  = (distance - 2*margin) / (1 + edge.vulnerabilities.length);
     const xGap = Math.cos(a) * gap;
@@ -304,6 +323,116 @@ function getVulnerabilitiesProperties(edge, nodePositions) {
     return vulnerabilities;
 }
 
+/***************************** Mitigations *****************************/
+
+function insertMitigations(graph, nodePositions, content) {
+    const mitigationsMap = getMitigations(content);
+    
+    for (const [nodeID, mitigations] of Object.entries(mitigationsMap)) {
+        const node = nodePositions[nodeID];
+        let mitigationProperties = getMitigationsProperties(node.x /*+ node.width/2*/, node.y /*+ node.height/2*/, mitigations);
+        
+        for (const m of mitigationProperties) {
+            const result = createElementFromDAG("treatment", m.id, m.text, m.x, m.y);
+            graph.addCell(result.element);
+
+            const link = new joint.shapes.coras.defaultLink();
+            link.source({ id: m.id, magnet: "body" });
+            link.target({ id: nodeID, magnet: "body" });
+            graph.addCell(link);
+        }
+    }
+
+    return graph;
+}
+
+function getMitigations(content) {
+    let mitigations = {};
+    let mitigationIDs = [];
+    
+    for (const node of content.vertices) {
+        if (node.type === "mitigation") {
+            mitigationIDs.push(node.id);
+        } else {
+            mitigations[node.id] = [];
+        }
+    }
+
+    for (const edge of content.edges) {
+        if (mitigationIDs.includes(edge.source) && !mitigationIDs.includes(edge.target) && mitigations.hasOwnProperty(edge.target)) 
+        {
+            mitigations[edge.target].push({
+                id: edge.source,
+                text: getTextOfNode(edge.source, content)
+            });
+        } else if (mitigationIDs.includes(edge.target) && !mitigationIDs.includes(edge.source) && mitigations.hasOwnProperty(edge.source)) 
+        {
+            mitigations[edge.source].push({
+                id: edge.target,
+                text: getTextOfNode(edge.target, content)
+            });
+        }
+    }
+
+    return mitigations;
+}
+
+function getMitigationsProperties(x, y, mitigations) {
+    let mitigationProperties = [];
+    let n = mitigations.length;
+    let delta = 2 * Math.PI / n;
+    const r = 225;    
+
+    let i = 0;
+    for (const mitigation of mitigations) {
+        let theta = delta * i + Math.PI / 3;
+        mitigationProperties.push({
+            id: mitigation.id,
+            text: mitigation.text,
+            x: r*Math.cos(theta) + x,
+            y: r*Math.sin(theta) + y
+        });
+        i += 1;
+    }
+
+    return mitigationProperties;
+}
+
+/*************************** Util functions ****************************/
+
+function formatElement(text) {
+    let length = 0;
+    let formattedText = "";
+    let lines = 1;
+    let maxLength = 0;
+
+    for (const word of text.split(" ")) {
+        formattedText += (length == 0 ? "" : " ") + word;
+        length += word.length;
+        if (length > ELEMENT_TEXT_LINE_THRESHOLD) {
+            formattedText += "\n";
+            lines += 1;
+            maxLength = (length > maxLength) ? length : maxLength;
+            length = 0;
+        }
+    }
+
+    return { 
+        text:          formattedText, 
+        elementWidth:  Math.floor(maxLength * 3.5), 
+        elementHeight: lines * 10 
+    };
+}
+
+function getTextOfNode(nodeID, content) {
+    for (const node of content.vertices) {
+        if (node.id === nodeID) {
+            return node.text;
+        }
+    }
+    return "";
+}
+
 function generateUUID() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
         const r = Math.random() * 16 | 0;
@@ -312,7 +441,7 @@ function generateUUID() {
     });
 }
 
-// CORAS JSON -> Natural Language CORAS Semantics
+/************** CORAS JSON -> Natural Language CORAS Semantics *********/
 
 export function naturalLanguageFromThreatModel(content) {
     let links = [];
