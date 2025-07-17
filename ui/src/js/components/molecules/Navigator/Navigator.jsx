@@ -14,7 +14,7 @@ import FileUpload from './FileUpload';
 import { naturalLanguageFromThreatModel } from '../Editor/DAG.js';
 
 const CORAS_NAVIGATOR_IP = "localhost";
-const CORAS_NAVIGATOR_PORT = 5242;
+const CORAS_NAVIGATOR_PORT = 5050;
 
 const DEVELOPMENT_MODE = false;
 

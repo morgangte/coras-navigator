@@ -68,5 +68,5 @@ if __name__ == '__main__':
         DocumentExtension.TXT
     )])
    
-    app.run(debug=True, port=5242)
+    app.run(debug=True, port=5050)
     
