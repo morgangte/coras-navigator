@@ -43,8 +43,8 @@ $ conda activate <env-name>
 # User Interface
 (<env-name>) $ conda install conda-forge::nodejs
 (<env-name>) $ cd ui
-(<env-name>) $ npm i parcel
-(<env-name>) $ npm i react
+(<env-name>) $ npm i parcel react react-markdown remark-gfm@3.0.1
+
 
 (<env-name>) $ conda deactivate
 ```

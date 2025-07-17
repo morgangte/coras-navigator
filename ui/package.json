@@ -4,7 +4,7 @@
   "description": "A web application presenting the CORAS approach and language, to aid in learning the framework.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "PORT=1234 parcel src/index.html",
+    "start": "PORT=1235 parcel src/index.html",
     "build": "parcel build src/index.html --public-url ./",
     "deploy": "npm run build && firebase deploy"
   },
@@ -28,14 +28,16 @@
     "jquery": "^3.3.1",
     "jshint": "^2.9.5",
     "lodash": "^4.17.15",
-    "parcel": "^2.15.2",
+    "parcel": "^2.15.4",
     "react": "^17.0.2",
     "react-bootstrap": "^1.5.2",
     "react-dom": "^17.0.2",
     "react-draggable": "^4.4.3",
+    "react-markdown": "^8.0.7",
     "react-redux": "^7.2.1",
     "react-router-dom": "^4.3.1",
-    "redux": "^4.0.4"
+    "redux": "^4.0.4",
+    "remark-gfm": "^3.0.1"
   },
   "devDependencies": {
     "eslint": "^4.19.1",

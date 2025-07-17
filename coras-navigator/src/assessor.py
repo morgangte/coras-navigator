@@ -15,7 +15,7 @@ class RiskAssessor:
     def __init__(self, model: str):
         self.llm = ChatOllama(
             model=model,
-            temperature=0.05
+            temperature=0
         )
 
     def assess(self, description: str, context: str) -> str:

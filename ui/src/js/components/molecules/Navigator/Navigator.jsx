@@ -1,4 +1,10 @@
 import React, { createRef } from 'react';
+
+// Render Markdown
+import ReactMarkdown from 'react-markdown';
+// Markdown tables
+import remarkGfm from 'remark-gfm';
+
 import joint from 'jointjs';
 
 import './navigator.css'
@@ -8,7 +14,7 @@ import FileUpload from './FileUpload';
 import { naturalLanguageFromThreatModel } from '../Editor/DAG.js';
 
 const CORAS_NAVIGATOR_IP = "localhost";
-const CORAS_NAVIGATOR_PORT = 5050;
+const CORAS_NAVIGATOR_PORT = 5242;
 
 const DEVELOPMENT_MODE = false;
 
@@ -342,7 +348,9 @@ class Navigator extends React.Component {
             {this.statusMessage(this.state.displaySummaryStatusMessage, this.state.summaryStatusMessage)}
             {this.state.displaySummary ? <>
                 <p>Here is a structured description of the system: </p>
-                <pre className="generated-text">{this.state.summary}</pre>
+                <div className="generated-text">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{this.state.summary}</ReactMarkdown>
+                </div>
                 <p>Does this description accurately reflect your system?</p>
                 <div className="action-buttons">
                     <button onClick={this.onSummaryAccurateYesButtonClick}>Yes, proceed to the risk analysis</button>
@@ -352,7 +360,9 @@ class Navigator extends React.Component {
             {this.statusMessage(this.state.displayAnalysisStatusMessage, this.state.analysisStatusMessage)}
             {this.state.displayAnalysis ? <>
                 <p>Risk assessment:</p> 
-                <pre className="generated-text">{this.state.analysis}</pre>
+                <div className="generated-text">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{this.state.analysis}</ReactMarkdown>
+                </div>
                 <div className="action-buttons">
                     <button onClick={this.onDisplayContextButtonClick}>{this.state.displayContext ? "- Hide retrieved context" : "+ Show retrieved context"}</button>
                 </div>

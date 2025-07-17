@@ -24,7 +24,7 @@ class Summarizer:
     def __init__(self, model: str):
         self.llm = OllamaLLM( 
             model=model,
-            temperature=0.05
+            temperature=0
         )
 
     def summarize(self, text: str) -> str:
