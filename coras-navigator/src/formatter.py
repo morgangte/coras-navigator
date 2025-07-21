@@ -264,7 +264,9 @@ The rules you must follow to generate the JSON file are:
 
 <risks>
 {input}
-</risks>""")
+</risks>
+
+Remember to list all the cited risks and not just one. Remember to also put the vulnerabilities into the JSON. A vulnerability must be linked to one and only one edge.""")
         ])
 
         structured_llm = self.llm.with_structured_output(self.json_schema)

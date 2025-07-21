@@ -42,7 +42,7 @@ Then, from this high-level analysis, specify for each risk the following items: 
     def assess(self, description: str, context: str) -> str:
         prompt = ChatPromptTemplate.from_messages([
             ("system", self.system_prompt),
-            ("human", "Analyze the following system:\n###\n{description}\n###\n<context>\n{context}\n</context>")
+            ("human", "Analyze the following system:\n###\n{description}\n###\n<context>\n{context}\n</context>\n\nWhen citing vulnerabilities, you must tell if they are retrieved from the context or not.")
         ])
 
         chain = prompt | self.llm

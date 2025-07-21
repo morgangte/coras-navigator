@@ -73,13 +73,17 @@ class Navigator extends React.Component {
         const reader = new FileReader();
         reader.readAsText(file, "UTF-8");
         reader.onload = (event) => {
-            const text = naturalLanguageFromThreatModel(JSON.parse(event.target.result));
-            console.log(text);
-            this.setState({ 
-                corasModelTranscription: text,
-                corasModelFilename: file.name,
-                checked: false
-            });
+            try {
+                const text = naturalLanguageFromThreatModel(JSON.parse(event.target.result));
+                console.log(text);
+                this.setState({ 
+                    corasModelTranscription: text,
+                    corasModelFilename: file.name,
+                    checked: false
+                });
+            } catch (error) {
+                console.error("Failed to load file: " + error);
+            }
         }
         reader.onerror = (event) => {
             console.log("Error while reading CORAS Threat Model file");
@@ -334,7 +338,6 @@ class Navigator extends React.Component {
                         }}/>
                         Include generated CORAS Threat Model
                     </label> : null }    
-                    <FileUpload title="Upload a file" onFileSelect={this.onFileSelect} disabled={this.state.loading}/>
                     <FileUpload title="Upload a CORAS Threat Model" onFileSelect={this.onCorasModelSelect} disabled={this.state.loading}/>
                 </div>
             </div>
