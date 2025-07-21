@@ -45,7 +45,6 @@ $ conda activate <env-name>
 (<env-name>) $ cd ui
 (<env-name>) $ npm i parcel react react-markdown remark-gfm@3.0.1
 
-
 (<env-name>) $ conda deactivate
 ```
 
