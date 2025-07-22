@@ -330,7 +330,9 @@ function insertMitigations(graph, nodePositions, content) {
     
     for (const [nodeID, mitigations] of Object.entries(mitigationsMap)) {
         const node = nodePositions[nodeID];
-        let mitigationProperties = getMitigationsProperties(node.x /*+ node.width/2*/, node.y /*+ node.height/2*/, mitigations);
+        if (node === undefined) continue;
+
+        let mitigationProperties = getMitigationsProperties(node.x, node.y, mitigations);
         
         for (const m of mitigationProperties) {
             const result = createElementFromDAG("treatment", m.id, m.text, m.x, m.y);
