@@ -34,9 +34,6 @@ $ conda activate <env-name>
 (<env-name>) $ conda install langchain langchain-community faiss
 (<env-name>) $ pip install -U langchain-ollama
 
-# Handling PDF files
-(<env-name>) $ conda install conda-forge::pypdf
-
 # Make the CORAS Navigator accessible to the User Interface
 (<env-name>) $ conda install anaconda::flask anaconda::flask-cors
 
@@ -44,7 +41,6 @@ $ conda activate <env-name>
 (<env-name>) $ conda install conda-forge::nodejs
 (<env-name>) $ cd ui
 (<env-name>) $ npm i parcel react react-markdown remark-gfm@3.0.1
-
 
 (<env-name>) $ conda deactivate
 ```
