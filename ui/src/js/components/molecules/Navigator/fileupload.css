@@ -1,0 +1,23 @@
+.load-button {
+    padding: 0.5rem;
+    height: 2.3em;
+    margin-left: 0.25em;
+    white-space: nowrap;
+    background-color: darkcyan;
+    color: white;
+    border: solid 1px white;
+}
+
+.load-button.disabled {
+    background-color: rgba(0, 139, 139, 0.3); 
+}
+
+.load-button.disabled:hover {
+    background-color: rgba(0, 139, 139, 0.3); 
+    cursor: not-allowed;
+}
+
+.load-button:hover {
+    background-color: rgba(0, 139, 139, 0.7);
+    cursor: pointer;
+}

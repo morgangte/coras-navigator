@@ -1,0 +1,210 @@
+.one-line {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+textarea {
+    border: 1px solid rgb(230, 230, 230);
+    padding: 0.5em;
+    border-radius: 0.5em;
+    height: 5vh;
+    resize: vertical;
+    min-height: 2.5em;
+}
+
+.generated-text {
+    border-left: 3px solid rgba(207, 207, 207, 0.856);
+    padding-left: 0.75em;
+}
+
+.action-buttons {
+    display: flex;
+    flex-direction: row;
+    justify-content: end;
+    gap: 0.25em;
+}
+
+.action-buttons button {
+    background-color: slategray;
+    color: white;
+    border: solid 1px white;
+    border-radius: 5px;
+    padding: .5rem;
+    display: inline-block;
+}
+
+.action-buttons button:hover {
+    background-color: rgb(161, 174, 187);
+    cursor: pointer;
+}
+
+.display-context-button {
+    color: rgb(40, 40, 40);
+}
+
+.display-context-button:hover {
+    color: rgb(0, 139, 139);
+    cursor: pointer;
+}
+
+/*********************** Loading animation ********************/
+
+.navigator-status-message-container {
+    display: flex;
+    flex-direction: row;
+    gap: 1em;
+}
+
+.animated-loading-element {
+    width: 10px;
+    height: 10px;
+    margin-top: 8px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 3px solid rgb(27, 62, 117);
+    animation:
+        l20-1 0.8s infinite linear alternate,
+        l20-2 1.6s infinite linear;
+}
+
+@keyframes l20-1{
+   0%    {clip-path: polygon(50% 50%,0       0,  50%   0%,  50%    0%, 50%    0%, 50%    0%, 50%    0% )}
+   12.5% {clip-path: polygon(50% 50%,0       0,  50%   0%,  100%   0%, 100%   0%, 100%   0%, 100%   0% )}
+   25%   {clip-path: polygon(50% 50%,0       0,  50%   0%,  100%   0%, 100% 100%, 100% 100%, 100% 100% )}
+   50%   {clip-path: polygon(50% 50%,0       0,  50%   0%,  100%   0%, 100% 100%, 50%  100%, 0%   100% )}
+   62.5% {clip-path: polygon(50% 50%,100%    0, 100%   0%,  100%   0%, 100% 100%, 50%  100%, 0%   100% )}
+   75%   {clip-path: polygon(50% 50%,100% 100%, 100% 100%,  100% 100%, 100% 100%, 50%  100%, 0%   100% )}
+   100%  {clip-path: polygon(50% 50%,50%  100%,  50% 100%,   50% 100%,  50% 100%, 50%  100%, 0%   100% )}
+}
+
+@keyframes l20-2{ 
+  0%    {transform:scaleY(1)  rotate(0deg)}
+  49.99%{transform:scaleY(1)  rotate(135deg)}
+  50%   {transform:scaleY(-1) rotate(0deg)}
+  100%  {transform:scaleY(-1) rotate(-135deg)}
+}
+
+/*********************** Loaded files list ********************/
+
+.file-uploads {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.files-list {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5em;
+}
+
+.file-square {
+    background-color: rgba(235, 235, 235, 0.267);
+    border: 1px solid rgba(212, 212, 212, 0.445);
+    border-radius: 0.375em;
+    width: 7em;
+    height: 7em;
+}
+
+.file-square:hover {
+    background-color: rgba(235, 235, 235, 0.788);
+    border-color: rgba(212, 212, 212, 0.445);
+    cursor: pointer;
+}
+
+button.remove-file {
+    background-color: transparent;
+    border: 1px solid transparent;
+    color: rgb(110, 110, 110);
+    margin-left: 6em;
+    margin-top: 0.24em;
+    border-radius: 2em;
+    width: 2.25em;
+}
+
+button.remove-file:hover {
+    background-color: rgba(221, 221, 221, 0.856);
+    border: 1px solid rgb(209, 209, 209);
+}
+
+p.file-name {
+    color: rgb(110, 110, 110);
+    font-size: 0.75em;
+    text-align: center;
+    margin-top: 5em;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    margin-left: 0.5em;
+    margin-right: 0.5em;
+}
+
+/******************** CORAS Editor container ******************/
+
+.coras-model-container {
+    margin-top: 0.2em;
+    background-color: rgba(235, 235, 235, 0.199);
+    width: 100%;
+
+    /* Height calculated from the elements of the Editor, because the bottom div.editor-tools is floating. 
+     *   div.editor-menu + margin
+     *       text: 0.8333em (? ok)
+     *       button padding: 0.5rem	x2
+     *       margin: 1rem
+     *
+     *   div.diagram-tabrow
+     *       padding: .5rem		x2
+     *       text height: 1em (? ok)
+     *
+     *   div.paper-holder-wrapper + margin
+     *       height: 78.8vh
+     *       margin bottom: 1rem
+     *
+     *   div.editor-tools + 2*margin
+     *       margin 1rem		x2
+     *       tab text: 1em
+     *       tab padding: .5rem	x2
+     *       icon height := 105px
+     *       icon padding: 1rem 	x2
+     *       scrollbar: 0.8em
+     */
+    height: calc(78.8vh + 105px + 9rem + 3.6333em);
+  
+    border-radius: 0.75em;
+    border: 1px solid rgba(212, 212, 212, 0.445);
+}
+
+/*************** Changes to the style of "Editor" *************/
+
+.editor-menu__button:hover {
+    background-color: rgba(0, 139, 139, 0.7);
+    cursor: pointer;
+}
+
+.editor-toolbox {
+    flex-wrap: nowrap;
+    overflow: auto;
+    overflow-x: scroll;
+    height: 8.3em;
+}
+
+.editor-toolbox__element {
+    height: 5em;
+    text-overflow: ellipsis;
+}
+
+.coras-model-container.hidden,
+.coras-model-container.hidden .editor-wrapper,
+.coras-model-container.hidden .editor-wrapper .editor-menu {
+    visibility: collapse;
+}
+
+.coras-model-container a.diagram-tabrow__tablink#diagram-tabrow-id-Asset,
+.coras-model-container a.diagram-tabrow__tablink#diagram-tabrow-id-Risk,
+.coras-model-container a.diagram-tabrow__tablink#diagram-tabrow-id-Treatment_overview {
+    width: 0px;
+    height: 0px;
+    visibility: hidden;
+}
+

@@ -1,0 +1,48 @@
+.main-header {
+    background-color: #254153;
+    width: 100%;
+}
+
+.main-header-wrapper {
+    height: 3rem;
+    display: flex;
+    max-width: 100rem;
+    margin: 0 auto auto auto;
+}
+
+.header-logo {
+    flex: 1 1;
+    width: 20%;
+    text-align: left;
+    font-size: 1.5rem;
+    color: rgb(255, 255, 255);
+    padding: 0;
+    margin: auto auto .45rem .75rem;
+    align-self: center;
+}
+
+.main-menu-container {
+    flex: 3 3;
+    width: 70%;
+    text-align: right;
+    align-self: bottom;
+}
+
+.main-menu {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    color: white;
+    font-family: 'Raleway', 'serif';
+    height: 100%;
+}
+
+.main-menu__item {
+    position: relative;
+    padding: .2rem;
+    margin: 0 .5rem;
+    margin-right: 1rem;
+}
