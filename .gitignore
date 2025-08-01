@@ -5,7 +5,6 @@ __pycache__/
 coras-navigator/rag-docs/*
 
 # Saved Vector Store
-coras-navigator/resource/rag-sources.json
 coras-navigator/resource/vector-store
 coras-navigator/vector-stores/cwe/
 coras-navigator/vector-stores/main/

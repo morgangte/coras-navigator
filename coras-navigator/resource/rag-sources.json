@@ -1,0 +1,44 @@
+{
+    "zip_sources": [{
+            "url": "https://capec.mitre.org/data/csv/1000.csv.zip",
+            "zip_filename": "capec-mechanisms-of-attack.zip",
+            "original_filename": "1000.csv",
+            "final_filename": "capec-mechanisms-of-attack.csv"
+        }, {
+            "url": "https://capec.mitre.org/data/csv/3000.csv.zip",
+            "zip_filename": "capec-domains-of-attack.zip",
+            "original_filename": "3000.csv",
+            "final_filename": "capec-domains-of-attack.csv"
+        }, {
+            "url": "https://capec.mitre.org/data/csv/333.csv.zip",
+            "zip_filename": "capec-wasc-threat-classification-2.0.zip",
+            "original_filename": "333.csv",
+            "final_filename": "capec-wasc-threat-classification-2.0.csv"
+        }, {
+            "url": "https://capec.mitre.org/data/csv/658.csv.zip",
+            "zip_filename": "capec-att_ck-related-patterns.zip",
+            "original_filename": "658.csv",
+            "final_filename": "capec-att_ck-related-patterns.csv"
+        }, {
+            "url": "https://capec.mitre.org/data/csv/659.csv.zip",
+            "zip_filename": "capec-owasp-related-patterns.zip",
+            "original_filename": "659.csv",
+            "final_filename": "capec-owasp-related-patterns.csv"
+        }, {
+            "url": "https://cwe.mitre.org/data/csv/699.csv.zip",
+            "zip_filename": "cwe-software-development.zip",
+            "original_filename": "699.csv",
+            "final_filename": "cwe-software-development.csv"
+        }, {
+            "url": "https://cwe.mitre.org/data/csv/1194.csv.zip",
+            "zip_filename": "cwe-hardware-design.zip",
+            "original_filename": "1194.csv",
+            "final_filename": "cwe-hardware-design.csv"
+        }, {
+            "url": "https://cwe.mitre.org/data/csv/1000.csv.zip",
+            "zip_filename": "cwe-research-concepts.zip",
+            "original_filename": "1000.csv",
+            "final_filename": "cwe-research-concepts.csv"
+        }
+    ]
+}
