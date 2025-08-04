@@ -41,17 +41,7 @@ class Summarizer:
         raise Exception("Invalid class: Summarizer::summarize() not implemented")
 
 class SimpleSummarizer(Summarizer):
-    system_prompt = """
-        You are a helpful assistant that organizes a provided system description into a structured, clear and comprehensive description.
-        In your answer, do not write any introductory sentence such as 'Here is a description...'.
-        """
-
     def summarize(self, text: str) -> str:
-        prompt = ChatPromptTemplate.from_messages([
-            ("system", self.system_prompt),
-            ("human", "Reformulate this text following the instructions you were given: {text}")
-        ])
-
         prompt = ChatPromptTemplate.from_template("""System description: {text}
 
 Do not write any introductory sentence such as 'Here is a description...'. Provide a structured, clear and comprehensive description of the system: """)
