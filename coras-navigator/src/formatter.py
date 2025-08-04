@@ -222,28 +222,6 @@ The rules you must follow to generate the JSON file are:
 }}"""
         }
     ]
-    """You are a helpul assistant that formats multiple risks and scenarios into a single JSON file. Include in the JSON every risk that is provided. You must include the listed vulnerabilities into edges of the JSON. The JSON format you must follow is:
-{{ 
-    "vertices": [{{ 
-        "type": string,  
-        "id": string,   
-        "text": string     
-    }}],
-    "edges": [{{
-        "source": string,
-        "target": string,
-        "vulnerabilities": [string]
-    }}]
-}} 
-The rules you must follow to generate the JSON file are:
-- Vertices type can be "human_threat_non_malicious" (a human threat with no malicious intent), "human_threat_malicious" (a human threat with malicious intent), "non_human_threat" (a threat that is not a human), "threat_scenario", "unwanted_incident", "asset" or "mitigation"
-- Every vertices must have a type, an id and a text
-- Every edges must have a source and a target
-- A threat can initiate a threat scenario
-- A threat scenario can lead to an other threat scenario or an unwanted incident
-- A vulnerability should be linked to one and only one edge
-- Every unwanted incident must impact at least one asset
-- Mitigations can only treat 'threat scenarios'"""
  
     def format(self, text: str) -> str:
         # Few shot prompting
